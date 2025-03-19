@@ -4,67 +4,64 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>股票推荐系统</title>
+    <title>用户主页 - 股票推荐系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             padding-top: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
         }
-        .welcome-section {
+        .user-info {
             background-color: #f8f9fa;
             padding: 30px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
+        .card {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <!-- 顶部导航栏，包含登录和注册选项 -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-      <div class="container">
-        <a class="navbar-brand" href="hello.jsp">股票推荐系统</a>
-        <div class="collapse navbar-collapse justify-content-end">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="/loginPage.jsp">登录</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/loginPage.jsp">注册</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    
     <div class="container">
-        <div class="welcome-section">
-            <h1 class="text-center">欢迎使用股票推荐系统</h1>
-            <p class="lead text-center">${message}</p>
+        <!-- 用户基本信息与账户余额 -->
+        <div class="user-info">
+            <h1>欢迎, ${user.username}!</h1>
+            <p>邮箱: ${user.email}</p>
+            <p>账户余额: ￥<c:out value="${accountBalance}" /></p>
         </div>
         
         <div class="row">
+            <!-- 持有的股票 -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        系统功能
+                        持有的股票
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">个性化股票推荐</li>
-                        <li class="list-group-item">股票行情分析</li>
-                        <li class="list-group-item">投资组合管理</li>
+                        <c:forEach items="${userHoldings}" var="holding">
+                            <li class="list-group-item">
+                                ${holding.code} - ${holding.companyName}
+                                <span class="badge bg-info float-end">持有: ${holding.quantity}</span>
+                            </li>
+                        </c:forEach>
+                        <c:if test="${empty userHoldings}">
+                            <li class="list-group-item">暂无持仓</li>
+                        </c:if>
                     </ul>
                 </div>
             </div>
+            
+            <!-- 根据持仓推荐的股票 -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        热门股票
+                        根据您的持仓推荐的股票
                     </div>
                     <ul class="list-group list-group-flush">
-                        <c:forEach items="${hotStocks}" var="stock">
+                        <c:forEach items="${recommendedStocks}" var="stock">
                             <li class="list-group-item">
                                 ${stock.code} - ${stock.companyName}
                                 <span class="badge ${stock.priceChange >= 0 ? 'bg-success' : 'bg-danger'} float-end">
@@ -72,8 +69,8 @@
                                 </span>
                             </li>
                         </c:forEach>
-                        <c:if test="${empty hotStocks}">
-                            <li class="list-group-item">暂无数据</li>
+                        <c:if test="${empty recommendedStocks}">
+                            <li class="list-group-item">暂无推荐股票</li>
                         </c:if>
                     </ul>
                 </div>
