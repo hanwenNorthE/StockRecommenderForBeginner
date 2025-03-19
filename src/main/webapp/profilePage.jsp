@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>用户主页 - 股票推荐系统</title>
+    <title>User Home - Stock Recommendation System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -28,9 +28,9 @@
     <div class="container">
         <!-- 用户基本信息与账户余额 -->
         <div class="user-info">
-            <h1>欢迎, ${user.username}!</h1>
-            <p>邮箱: ${user.email}</p>
-            <p>账户余额: ￥<c:out value="${accountBalance}" /></p>
+            <h1>Welcome, ${user.username}!</h1>
+            <p>Email: ${user.email}</p>
+            <p>Account Balance: ￥<c:out value="${accountBalance}" /></p>
         </div>
         
         <div class="row">
@@ -38,17 +38,17 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        持有的股票
+                        Stocks Held
                     </div>
                     <ul class="list-group list-group-flush">
                         <c:forEach items="${userHoldings}" var="holding">
                             <li class="list-group-item">
                                 ${holding.code} - ${holding.companyName}
-                                <span class="badge bg-info float-end">持有: ${holding.quantity}</span>
+                                <span class="badge bg-info float-end">Holding: ${holding.quantity}</span>
                             </li>
                         </c:forEach>
                         <c:if test="${empty userHoldings}">
-                            <li class="list-group-item">暂无持仓</li>
+                            <li class="list-group-item">No holdings</li>
                         </c:if>
                     </ul>
                 </div>
@@ -58,7 +58,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        根据您的持仓推荐的股票
+                        Recommended Stocks Based on Your Holdings
                     </div>
                     <ul class="list-group list-group-flush">
                         <c:forEach items="${recommendedStocks}" var="stock">
@@ -70,7 +70,7 @@
                             </li>
                         </c:forEach>
                         <c:if test="${empty recommendedStocks}">
-                            <li class="list-group-item">暂无推荐股票</li>
+                            <li class="list-group-item">No recommended stocks</li>
                         </c:if>
                     </ul>
                 </div>
