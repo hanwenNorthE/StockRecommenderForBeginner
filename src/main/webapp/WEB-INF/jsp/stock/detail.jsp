@@ -4,15 +4,15 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>${stock.companyName} - 股票详情</title>
+    <title>${stock.companyName} - Stock Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/stocks">股票列表</a></li>
-                <li class="breadcrumb-item active" aria-current="page">股票详情</li>
+                <li class="breadcrumb-item"><a href="/stocks">Stock List</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Stock Details</li>
             </ol>
         </nav>
         
@@ -25,17 +25,17 @@
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <h4 class="mb-3">基本信息</h4>
-                                <p><strong>股票代码:</strong> ${stock.code}</p>
-                                <p><strong>公司名称:</strong> ${stock.companyName}</p>
-                                <p><strong>行业:</strong> ${stock.industry}</p>
-                                <p><strong>市值:</strong> ${stock.marketValue}</p>
+                                <h4 class="mb-3">Basic Information</h4>
+                                <p><strong>Stock Code:</strong> ${stock.code}</p>
+                                <p><strong>Company Name:</strong> ${stock.companyName}</p>
+                                <p><strong>Industry:</strong> ${stock.industry}</p>
+                                <p><strong>Market Value:</strong> ${stock.marketValue}</p>
                             </div>
                             <div class="col-md-6">
-                                <h4 class="mb-3">价格信息</h4>
-                                <p><strong>当前价格:</strong> $${stock.currentPrice}</p>
+                                <h4 class="mb-3">Price Information</h4>
+                                <p><strong>Current Price:</strong> $${stock.currentPrice}</p>
                                 <p>
-                                    <strong>涨跌幅:</strong> 
+                                    <strong>Price Change:</strong> 
                                     <span class="${stock.priceChange >= 0 ? 'text-success' : 'text-danger'}">
                                         ${stock.priceChange >= 0 ? '+' : ''}${stock.priceChange}%
                                     </span>
@@ -43,8 +43,8 @@
                             </div>
                         </div>
                         
-                        <h4 class="mb-3">公司描述</h4>
-                        <p>${stockDetail.description != null ? stockDetail.description : '暂无描述'}</p>
+                        <h4 class="mb-3">Company Description</h4>
+                        <p>${stockDetail.description != null ? stockDetail.description : 'No description available'}</p>
                     </div>
                 </div>
             </div>
@@ -52,11 +52,11 @@
             <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-header bg-secondary text-white">
-                        相关新闻
+                        Related News
                     </div>
                     <ul class="list-group list-group-flush">
                         <c:if test="${empty news}">
-                            <li class="list-group-item">暂无相关新闻</li>
+                            <li class="list-group-item">No related news</li>
                         </c:if>
                         <c:forEach items="${news}" var="item">
                             <li class="list-group-item">

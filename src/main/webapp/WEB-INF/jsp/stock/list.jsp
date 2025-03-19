@@ -4,32 +4,32 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>股票列表</title>
+    <title>Stock List</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-4">
-        <h1 class="mb-4">股票列表</h1>
+        <h1 class="mb-4">Stock List</h1>
         
         <div class="row mb-3">
             <div class="col">
                 <form action="/stocks" method="get" class="d-flex">
-                    <input type="text" name="keyword" class="form-control me-2" placeholder="搜索股票..." value="${param.keyword}">
-                    <button type="submit" class="btn btn-primary">搜索</button>
+                    <input type="text" name="keyword" class="form-control me-2" placeholder="Search for stocks..." value="${param.keyword}">
+                    <button type="submit" class="btn btn-primary">Search</button>
                 </form>
             </div>
             <div class="col-auto">
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="industryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        按行业筛选
+                        Filter by Industry
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="industryDropdown">
-                        <li><a class="dropdown-item" href="/stocks">全部</a></li>
-                        <li><a class="dropdown-item" href="/stocks?industry=Technology">科技</a></li>
-                        <li><a class="dropdown-item" href="/stocks?industry=Finance">金融</a></li>
-                        <li><a class="dropdown-item" href="/stocks?industry=Healthcare">医疗健康</a></li>
-                        <li><a class="dropdown-item" href="/stocks?industry=Consumer Goods">消费品</a></li>
-                        <li><a class="dropdown-item" href="/stocks?industry=Energy">能源</a></li>
+                        <li><a class="dropdown-item" href="/stocks">All</a></li>
+                        <li><a class="dropdown-item" href="/stocks?industry=Technology">Technology</a></li>
+                        <li><a class="dropdown-item" href="/stocks?industry=Finance">Finance</a></li>
+                        <li><a class="dropdown-item" href="/stocks?industry=Healthcare">Healthcare</a></li>
+                        <li><a class="dropdown-item" href="/stocks?industry=Consumer Goods">Consumer Goods</a></li>
+                        <li><a class="dropdown-item" href="/stocks?industry=Energy">Energy</a></li>
                     </ul>
                 </div>
             </div>
@@ -38,13 +38,13 @@
         <table class="table table-striped table-hover">
             <thead class="table-dark">
                 <tr>
-                    <th>代码</th>
-                    <th>公司名称</th>
-                    <th>当前价格</th>
-                    <th>涨跌幅</th>
-                    <th>市值</th>
-                    <th>行业</th>
-                    <th>操作</th>
+                    <th>Code</th>
+                    <th>Company Name</th>
+                    <th>Current Price</th>
+                    <th>Price Change</th>
+                    <th>Market Value</th>
+                    <th>Industry</th>
+                    <th>Operation</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,13 +59,13 @@
                         <td>${stock.marketValue}</td>
                         <td>${stock.industry}</td>
                         <td>
-                            <a href="/stocks/detail?code=${stock.code}" class="btn btn-sm btn-info">详情</a>
+                            <a href="/stocks/detail?code=${stock.code}" class="btn btn-sm btn-info">Details</a>
                         </td>
                     </tr>
                 </c:forEach>
                 <c:if test="${empty stocks}">
                     <tr>
-                        <td colspan="7" class="text-center">暂无数据</td>
+                        <td colspan="7" class="text-center">No data available</td>
                     </tr>
                 </c:if>
             </tbody>

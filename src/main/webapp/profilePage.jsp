@@ -4,67 +4,64 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Stock Recommendation System</title>
+    <title>User Home - Stock Recommendation System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             padding-top: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
         }
-        .welcome-section {
+        .user-info {
             background-color: #f8f9fa;
             padding: 30px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
+        .card {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <!-- 顶部导航栏，包含登录和注册选项 -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-      <div class="container">
-        <a class="navbar-brand" href="hello.jsp">Stock Recommendation System</a>
-        <div class="collapse navbar-collapse justify-content-end">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="/loginPage.jsp">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/loginPage.jsp">Register</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-    
     <div class="container">
-        <div class="welcome-section">
-            <h1 class="text-center">Welcome to Stock Recommendation System</h1>
-            <p class="lead text-center">${message}</p>
+        <!-- 用户基本信息与账户余额 -->
+        <div class="user-info">
+            <h1>Welcome, ${user.username}!</h1>
+            <p>Email: ${user.email}</p>
+            <p>Account Balance: ￥<c:out value="${accountBalance}" /></p>
         </div>
         
         <div class="row">
+            <!-- 持有的股票 -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        System Features
+                        Stocks Held
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Personalized Stock Recommendations</li>
-                        <li class="list-group-item">Stock Market Analysis</li>
-                        <li class="list-group-item">Investment Portfolio Management</li>
+                        <c:forEach items="${userHoldings}" var="holding">
+                            <li class="list-group-item">
+                                ${holding.code} - ${holding.companyName}
+                                <span class="badge bg-info float-end">Holding: ${holding.quantity}</span>
+                            </li>
+                        </c:forEach>
+                        <c:if test="${empty userHoldings}">
+                            <li class="list-group-item">No holdings</li>
+                        </c:if>
                     </ul>
                 </div>
             </div>
+            
+            <!-- 根据持仓推荐的股票 -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        Hot Stocks
+                        Recommended Stocks Based on Your Holdings
                     </div>
                     <ul class="list-group list-group-flush">
-                        <c:forEach items="${hotStocks}" var="stock">
+                        <c:forEach items="${recommendedStocks}" var="stock">
                             <li class="list-group-item">
                                 ${stock.code} - ${stock.companyName}
                                 <span class="badge ${stock.priceChange >= 0 ? 'bg-success' : 'bg-danger'} float-end">
@@ -72,8 +69,8 @@
                                 </span>
                             </li>
                         </c:forEach>
-                        <c:if test="${empty hotStocks}">
-                            <li class="list-group-item">No data available</li>
+                        <c:if test="${empty recommendedStocks}">
+                            <li class="list-group-item">No recommended stocks</li>
                         </c:if>
                     </ul>
                 </div>
