@@ -4,7 +4,7 @@
 <html>
 <head>
    <meta charset="UTF-8">
-   <title>登录 / 注册 - 股票推荐系统</title>
+   <title>登录 / 注册</title>
    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
    <style>
       body {
@@ -23,6 +23,7 @@
 </head>
 <body>
    <div class="container">
+      <!-- 导航选项卡 -->
       <ul class="nav nav-tabs" id="authTab" role="tablist">
          <li class="nav-item" role="presentation">
              <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">登录</button>
@@ -31,6 +32,7 @@
              <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">注册</button>
          </li>
       </ul>
+
       <div class="tab-content" id="authTabContent">
          <!-- 登录表单 -->
          <div class="tab-pane fade show active auth-form" id="login" role="tabpanel" aria-labelledby="login-tab">
@@ -53,7 +55,8 @@
                  <button type="submit" class="btn btn-primary w-100">登录</button>
              </form>
          </div>
-         <!-- 注册表单（此处可根据需要修改） -->
+
+         <!-- 注册表单 -->
          <div class="tab-pane fade auth-form" id="register" role="tabpanel" aria-labelledby="register-tab">
              <h2 class="text-center">用户注册</h2>
              <c:if test="${not empty registerError}">
@@ -79,6 +82,7 @@
          </div>
       </div>
    </div>
+
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
