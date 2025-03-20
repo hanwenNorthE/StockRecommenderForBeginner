@@ -4,7 +4,11 @@
 <html>
 <head>
     <meta charset="UTF-8">
+<<<<<<< Updated upstream:src/main/webapp/profilePage.jsp
     <title>Client Profile</title>
+=======
+    <title>Profile Page - Stock Recommendation System</title>
+>>>>>>> Stashed changes:src/main/webapp/WEB-INF/jsp/profilePage.jsp
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
        body {
@@ -61,6 +65,7 @@
     <div class="container">
         <!-- 用户基本信息与账户余额 -->
         <div class="user-info">
+<<<<<<< Updated upstream:src/main/webapp/profilePage.jsp
             <h1>
                 Welcome, 
                 <c:choose>
@@ -75,10 +80,19 @@
             </h1>
             <p>E-mail: ${User.getEmail()}</p>
             <p>Account Balance: $<c:out value="${accountBalance}" /></p>
+=======
+            <h1>Welcome, ${user.name.firstName}!</h1>
+            <p>Email: ${user.email}</p>
+            <p>Account Balance: $<c:out value="${accountBalance}" /></p>
+            <!-- 新增按钮，跳转到持仓录入页面 -->
+            <div class="text-end">
+                <a href="${pageContext.request.contextPath}/holdings/add" class="btn btn-primary">Add Holdings</a>
+            </div>
+>>>>>>> Stashed changes:src/main/webapp/WEB-INF/jsp/profilePage.jsp
         </div>
         
         <div class="row">
-            <!-- 持有的股票 -->
+            <!-- 持有的股票展示 -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -87,8 +101,7 @@
                     <ul class="list-group list-group-flush">
                         <c:forEach items="${userHoldings}" var="holding">
                             <li class="list-group-item">
-                                ${holding.code} - ${holding.companyName}
-                                <span class="badge bg-info float-end">Holding: ${holding.quantity}</span>
+                                ${holding.stockCode} - Qty: ${holding.quantity}
                             </li>
                         </c:forEach>
                         <c:if test="${empty userHoldings}">

@@ -1,4 +1,6 @@
 package com.example.model;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class Stock {
     private String code;
@@ -43,13 +45,15 @@ public class Stock {
         return priceChange;
     }
     public void setPriceChange(double priceChange) {
-        this.priceChange = priceChange;
+        BigDecimal bd = new BigDecimal(priceChange).setScale(2, RoundingMode.HALF_UP);
+        this.priceChange = bd.doubleValue();
     }
     public double getMarketValue() {
         return marketValue;
     }
     public void setMarketValue(double marketValue) {
-        this.marketValue = marketValue;
+        BigDecimal bd = new BigDecimal(marketValue).setScale(2, RoundingMode.HALF_UP);
+        this.marketValue = bd.doubleValue();
     }
     public String getIndustry() {
         return industry;

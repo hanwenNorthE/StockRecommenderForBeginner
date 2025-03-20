@@ -8,10 +8,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import javax.sql.DataSource;
+import java.sql.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +19,26 @@ import java.util.Optional;
 @Repository
 public class HoldingDaoImpl extends JdbcDaoSupport implements HoldingDao {
 
+<<<<<<< Updated upstream
     private final RowMapper<Holding> rowMapper = new HoldingRowMapper();
+=======
+    private final JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    public HoldingDaoImpl(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+
+    private final RowMapper<Holding> rowMapper = (rs, rowNum) -> {
+        Holding holding = new Holding();
+        holding.setId(rs.getLong("id"));
+        holding.setPortfolioId(rs.getLong("portfolio_id"));
+        // 注意这里使用 stock_code
+        holding.setStockCode(rs.getString("stock_code"));
+        holding.setQuantity(rs.getInt("quantity"));
+        return holding;
+    };
+>>>>>>> Stashed changes
 
     @Override
     public Optional<Holding> findById(Long id) {
@@ -44,25 +61,33 @@ public class HoldingDaoImpl extends JdbcDaoSupport implements HoldingDao {
     public Holding save(Holding entity) {
         if (entity.getId() != null && existsById(entity.getId())) {
             // 更新
+<<<<<<< Updated upstream
             String sql = "UPDATE holdings SET portfolio_id = ?, stockCode = ?, quantity = ?, purchasePrice = ? WHERE id = ?";
             getJdbcTemplate().update(sql, 
+=======
+            String sql = "UPDATE holdings SET portfolio_id = ?, stock_code = ?, quantity = ? WHERE id = ?";
+            jdbcTemplate.update(sql,
+>>>>>>> Stashed changes
                 entity.getPortfolioId(),
-                entity.getStockCode(),
+                entity.getStockCode(), // Java字段stockCode -> 数据库列stock_code
                 entity.getQuantity(),
-                entity.getPurchasePrice(),
                 entity.getId()
             );
         } else {
             // 插入
             KeyHolder keyHolder = new GeneratedKeyHolder();
+<<<<<<< Updated upstream
             String sql = "INSERT INTO holdings (portfolio_id, stockCode, quantity, purchasePrice) VALUES (?, ?, ?, ?)";
             getJdbcTemplate().update(
+=======
+            String sql = "INSERT INTO holdings (portfolio_id, stock_code, quantity) VALUES (?, ?, ?)";
+            jdbcTemplate.update(
+>>>>>>> Stashed changes
                 connection -> {
                     PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                     ps.setLong(1, entity.getPortfolioId());
                     ps.setString(2, entity.getStockCode());
                     ps.setInt(3, entity.getQuantity());
-                    ps.setDouble(4, entity.getPurchasePrice());
                     return ps;
                 },
                 keyHolder
@@ -96,7 +121,7 @@ public class HoldingDaoImpl extends JdbcDaoSupport implements HoldingDao {
 
     @Override
     public Optional<Holding> findByPortfolioIdAndStockCode(Long portfolioId, String stockCode) {
-        String sql = "SELECT * FROM holdings WHERE portfolio_id = ? AND stockCode = ?";
+        String sql = "SELECT * FROM holdings WHERE portfolio_id = ? AND stock_code = ?";
         try {
             Holding holding = getJdbcTemplate().queryForObject(sql, rowMapper, portfolioId, stockCode);
             return Optional.ofNullable(holding);
@@ -107,23 +132,8 @@ public class HoldingDaoImpl extends JdbcDaoSupport implements HoldingDao {
 
     @Override
     public boolean updateQuantity(Long holdingId, int quantity) {
+        // 这里的逻辑是将quantity累加到现有的quantity上
         String sql = "UPDATE holdings SET quantity = quantity + ? WHERE id = ?";
         return getJdbcTemplate().update(sql, quantity, holdingId) > 0;
     }
-
-    /**
-     * Holding行映射器
-     */
-    private static class HoldingRowMapper implements RowMapper<Holding> {
-        @Override
-        public Holding mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Holding holding = new Holding();
-            holding.setId(rs.getLong("id"));
-            holding.setPortfolioId(rs.getLong("portfolio_id"));
-            holding.setStockCode(rs.getString("stockCode"));
-            holding.setQuantity(rs.getInt("quantity"));
-            holding.setPurchasePrice(rs.getDouble("purchasePrice"));
-            return holding;
-        }
-    }
-} 
+}
