@@ -13,7 +13,6 @@
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        /* 添加必要的自定义样式 */
         body {
             background-color: #f5f7fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -90,7 +89,7 @@
     <!-- React挂载点 -->
     <div id="profile-root" class="container mx-auto px-4 py-8"></div>
     
-    <!-- React组件 -->
+    <!-- React组件 (Profile, Holdings, ChatBox等) -->
     <script type="text/babel">
         // 从DOM元素中获取用户数据
         const userDataElement = document.getElementById('user-data');
@@ -390,7 +389,6 @@
             
             return (
                 <>
-                    {/* 聊天按钮 */}
                     <button 
                         onClick={() => setIsOpen(!isOpen)}
                         className="fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 z-50"
@@ -400,7 +398,6 @@
                         </svg>
                     </button>
                     
-                    {/* 聊天窗口 */}
                     {isOpen && (
                         <div 
                             ref={chatRef}
@@ -547,5 +544,46 @@
             document.getElementById('profile-root')
         );
     </script>
-</body>
-</html>
+    
+<!-- Replace the existing update and delete forms with these corrected versions -->
+
+<!-- Update Profile Form -->
+<div class="max-w-3xl mx-auto my-8 p-4 bg-white rounded-lg shadow-md">
+    <h2 class="text-xl font-bold mb-4">Update Your Information</h2>
+    <form action="${pageContext.request.contextPath}/profile/update" method="post" class="space-y-4">
+        <div>
+            <label for="newEmail" class="block font-medium">New Email:</label>
+            <input type="email" name="email" id="newEmail" class="border border-gray-300 rounded p-2 w-full" 
+                   placeholder="Enter new email" value="${user.email}" required>
+        </div>
+        <div>
+            <label for="newPassword" class="block font-medium">New Password:</label>
+            <input type="password" name="password" id="newPassword" class="border border-gray-300 rounded p-2 w-full"
+                   placeholder="Leave blank if you don't want to change" />
+        </div>
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+            Update Information
+        </button>
+    </form>
+</div>
+
+<!-- Delete Account Form -->
+<div class="max-w-3xl mx-auto my-8 p-4 bg-white rounded-lg shadow-md">
+    <h2 class="text-xl font-bold mb-4 text-red-600">Close Your Account</h2>
+    <form action="${pageContext.request.contextPath}/profile/delete" method="post"
+          onsubmit="return confirm('Are you sure you want to delete this account? This action cannot be undone.');">
+        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+            Delete My Account
+        </button>
+    </form>
+</div>
+
+<!-- Display messages (success or error) -->
+<div class="max-w-3xl mx-auto">
+    <c:if test="${not empty successMessage}">
+        <p class="text-green-600 font-bold mt-4">${successMessage}</p>
+    </c:if>
+    <c:if test="${not empty error}">
+        <p class="text-red-600 font-bold mt-4">${error}</p>
+    </c:if>
+</div>

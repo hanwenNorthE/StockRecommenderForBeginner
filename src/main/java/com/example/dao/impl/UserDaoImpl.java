@@ -106,13 +106,20 @@ public class UserDaoImpl implements UserDao {
     @Override
     public void update(User user) {
         try {
+            // Debug logging
+            System.out.println("开始更新用户: " + user.getEmail() + " (ID: " + user.getId() + ")");
+            
             String sql = "UPDATE users SET email = ?, password = ?, firstName = ?, lastName = ?, middleName = ? WHERE id = ?";
             Name name = user.getName();
             String firstName = name != null ? name.getFirstName() : null;
             String lastName = name != null ? name.getLastName() : null;
             String middleName = name != null ? name.getMiddleName() : null;
             
-            jdbcTemplate.update(sql, 
+            System.out.println("执行SQL: " + sql);
+            System.out.println("参数: " + user.getEmail() + ", " + user.getPassword() + ", " + 
+                             firstName + ", " + lastName + ", " + middleName + ", " + user.getId());
+            
+            int rowsAffected = jdbcTemplate.update(sql, 
                 user.getEmail(), 
                 user.getPassword(), 
                 firstName,
@@ -120,8 +127,16 @@ public class UserDaoImpl implements UserDao {
                 middleName,
                 user.getId()
             );
+            
+            System.out.println("用户更新成功，影响行数: " + rowsAffected);
+            
+            if (rowsAffected == 0) {
+                // No rows were affected - the ID might not exist
+                throw new RuntimeException("更新用户失败: 找不到ID为 " + user.getId() + " 的用户");
+            }
         } catch (Exception e) {
             System.err.println("更新用户失败: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("更新用户失败", e);
         }
     }
@@ -129,11 +144,27 @@ public class UserDaoImpl implements UserDao {
     @Override
     public void delete(Long id) {
         try {
+            System.out.println("开始删除用户ID: " + id);
+            
+            // First, check if the user exists
+            if (findById(id) == null) {
+                throw new RuntimeException("删除用户失败: 找不到ID为 " + id + " 的用户");
+            }
+            
             String sql = "DELETE FROM users WHERE id = ?";
-            jdbcTemplate.update(sql, id);
+            System.out.println("执行SQL: " + sql);
+            
+            int rowsAffected = jdbcTemplate.update(sql, id);
+            System.out.println("用户删除成功，影响行数: " + rowsAffected);
+            
+            if (rowsAffected == 0) {
+                // This should not happen since we checked existence above
+                throw new RuntimeException("删除用户失败: 未删除任何记录");
+            }
         } catch (Exception e) {
             System.err.println("删除用户失败: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("删除用户失败", e);
         }
     }
-} 
+}

@@ -8,9 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * 用户服务接口实现类
- */
 @Service
 public class UserService {
     
@@ -36,12 +33,9 @@ public class UserService {
             user.setName(new Name());
         }
         
-        // 这里应该进行密码加密，但为了简化，暂不处理
-        System.out.println("register user: " + user.getEmail());
-        
-        // 保存用户
+        // TODO: 可以在此进行密码加密
         userDao.save(user);
-        System.out.println("user registered");
+        System.out.println("user registered: " + user.getEmail());
     }
     
     /**
@@ -52,7 +46,7 @@ public class UserService {
         if (user != null && password.equals(user.getPassword())) {
             return user;
         }
-        return null;
+        return null; // 找不到或密码不匹配
     }
     
     /**
@@ -61,20 +55,38 @@ public class UserService {
     public void updatePreference(Long userId, UserPreference preference) {
         // 查找用户
         User user = userDao.findById(userId);
-        
         if (user == null) {
             throw new RuntimeException("user not found");
         }
-        
-        // 设置用户偏好并保存
+        // 设置用户偏好并更新
         user.setPreferences(preference);
         userDao.update(user);
     }
-    
+
     /**
      * 根据邮箱查找用户
      */
     public User findByEmail(String email) {
         return userDao.findByEmail(email);
     }
-} 
+    
+    // ========== 新增的两个方法，用于支持UPDATE/DELETE ==========
+
+    /**
+     * 更新用户资料（主要指 Email、Password 等）
+     */
+    @Transactional
+    public void updateUser(User user) {
+        // 可做更多业务校验，如检查新邮箱是否被占用
+        userDao.update(user);
+    }
+
+    /**
+     * 删除用户
+     */
+    @Transactional
+    public void deleteUser(Long userId) {
+        // 可以在这里做一些额外操作，如删除关联数据
+        userDao.delete(userId);
+    }
+}
