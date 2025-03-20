@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,6 +98,25 @@ public class StockDaoImpl implements StockDao {
     }
 
     @Override
+    public List<Stock> search(String keyword) {
+        String cleanKeyword = keyword.trim().toLowerCase();
+        
+        // first try exact match of stock code
+        Optional<Stock> exactCodeMatch = findById(cleanKeyword.toUpperCase());
+        if (exactCodeMatch.isPresent()) {
+            List<Stock> result = new ArrayList<>();
+            result.add(exactCodeMatch.get());
+            return result;
+        }
+        
+        // then try fuzzy search
+        String sql = "SELECT * FROM stocks WHERE LOWER(code) LIKE ? OR LOWER(companyName) LIKE ?";
+        String searchTerm = "%" + cleanKeyword + "%";
+        
+        return jdbcTemplate.query(sql, rowMapper, searchTerm, searchTerm);
+    }
+
+    @Override
     public List<Stock> findByIndustry(String industry) {
         String sql = "SELECT * FROM stocks WHERE industry = ?";
         return jdbcTemplate.query(sql, rowMapper, industry);
@@ -115,7 +135,7 @@ public class StockDaoImpl implements StockDao {
     }
 
     /**
-     * Stock行映射器
+     * Stock row mapper
      */
     private static class StockRowMapper implements RowMapper<Stock> {
         @Override

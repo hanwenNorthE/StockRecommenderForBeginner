@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <title>Stock Recommendation System</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- React需要的脚本 -->
+    <!-- React needed scripts -->
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -17,7 +17,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        /* Markdown内容样式 */
+        /* Markdown content style */
         .markdown-content {
             font-size: 0.95rem;
             line-height: 1.5;
@@ -54,7 +54,7 @@
     </style>
 </head>
 <body>
-    <!-- 热门股票数据 -->
+    <!-- hot stocks data -->
     <div id="hot-stocks-data" style="display:none">
         <c:forEach items="${hotStocks}" var="stock">
             <div class="stock-item" 
@@ -65,12 +65,14 @@
         </c:forEach>
     </div>
     
-    <!-- React挂载点 -->
+    <!-- React mount point -->
     <div id="main-root"></div>
     
-    <!-- React组件 -->
+    <!-- React component -->
     <script type="text/babel">
-        // 从DOM元素中获取热门股票数据
+        const contextPath = "${pageContext.request.contextPath}";
+        
+        // get hot stocks data from DOM element
         const HOT_STOCKS = [];
         const stockElements = document.querySelectorAll('#hot-stocks-data .stock-item');
         stockElements.forEach(element => {
@@ -81,7 +83,7 @@
             });
         });
         
-        // 股票推荐数据 (模拟数据)
+        // recommended stocks data (simulated data)
         const RECOMMENDED_STOCKS = [
             {
                 code: "NVDA",
@@ -103,7 +105,7 @@
             }
         ];
         
-        // 导航栏组件
+        // navigation bar component
         const NavigationBar = () => {
             const [showMenu, setShowMenu] = React.useState(false);
             
@@ -112,7 +114,7 @@
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl font-bold text-indigo-700">StockFinder</h1>
                         
-                        {/* 移动端菜单按钮 */}
+                        {/* mobile menu button */}
                         <div className="md:hidden">
                             <button onClick={() => setShowMenu(!showMenu)} className="text-gray-500 focus:outline-none">
                                 <svg className="h-6 w-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,41 +123,40 @@
                             </button>
                         </div>
                         
-                        {/* 桌面端菜单 */}
+                        {/* desktop menu */}
                         <ul className="hidden md:flex space-x-6 text-gray-700">
                             <li className="hover:text-indigo-700 cursor-pointer">
-                                <a href="${pageContext.request.contextPath}/">home</a>
+                                <a href={contextPath + "/"} className="block py-2 px-4 text-gray-700 hover:bg-gray-100">home</a>
                             </li>
                             <li className="hover:text-indigo-700 cursor-pointer">
-                                <a href="${pageContext.request.contextPath}/login">login/register</a>
+                                <a href={contextPath + "/login"} className="block py-2 px-4 text-gray-700 hover:bg-gray-100">login/register</a>
                             </li>
                             <li className="hover:text-indigo-700 cursor-pointer">
-                                <a href="${pageContext.request.contextPath}/profile">profile</a>
+                                <a href={contextPath + "/profile"} className="block py-2 px-4 text-gray-700 hover:bg-gray-100">profile</a>
                             </li>
                         </ul>
                     </div>
                     
-                    {/* 移动端下拉菜单 */}
+                    {/* mobile dropdown menu */}
                     {showMenu && (
                         <div className="md:hidden mt-4 py-2 bg-white border-t">
-                            <a href="${pageContext.request.contextPath}/" className="block py-2 px-4 text-gray-700 hover:bg-gray-100">home</a>
-                            <a href="${pageContext.request.contextPath}/login" className="block py-2 px-4 text-gray-700 hover:bg-gray-100">login/register</a>
-                            <a href="${pageContext.request.contextPath}/profile" className="block py-2 px-4 text-gray-700 hover:bg-gray-100">profile</a>
+                            <a href={contextPath + "/"} className="block py-2 px-4 text-gray-700 hover:bg-gray-100">home</a>
+                            <a href={contextPath + "/login"} className="block py-2 px-4 text-gray-700 hover:bg-gray-100">login/register</a>
+                            <a href={contextPath + "/profile"} className="block py-2 px-4 text-gray-700 hover:bg-gray-100">profile</a>
                         </div>
                     )}
                 </nav>
             );
         };
         
-        // 搜索栏组件
+        // search bar component
         const SearchBar = () => {
             const [searchTerm, setSearchTerm] = React.useState("");
             
             const handleSubmit = (e) => {
                 e.preventDefault();
                 if (searchTerm.trim()) {
-                    // 避免使用模板字符串和encodeURIComponent，改用字符串连接和escape函数
-                    const contextPath = "${pageContext.request.contextPath}";
+                    // avoid using template strings and encodeURIComponent, use string concatenation and escape function instead
                     const encodedTerm = escape(searchTerm.trim());
                     window.location.href = contextPath + "/search?q=" + encodedTerm;
                 }
@@ -187,7 +188,7 @@
             );
         };
         
-        // 股票网格组件
+        // stock grid component
         const StockGrid = () => {
             return (
                 <div className="py-16 px-4 bg-gray-50">
@@ -214,7 +215,7 @@
                                             </div>
                                         </div>
                                         <p className="text-gray-700 mb-4">{stock.description}</p>
-                                        <a href="${pageContext.request.contextPath}/stock/${stock.code}" 
+                                        <a href={contextPath + "/stocks/detail?code=" + stock.code}
                                            className="block text-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors">
                                             learn more
                                         </a>
@@ -227,7 +228,7 @@
             );
         };
         
-        // 热门股票组件
+        // hot stocks component
         const HotStocks = () => {
             return (
                 <div className="py-16 px-4 bg-white">
@@ -262,7 +263,7 @@
             );
         };
         
-        // 页脚组件
+        // footer component
         const Footer = () => {
             return (
                 <footer className="bg-gray-800 text-white py-8 px-4">
@@ -275,9 +276,9 @@
                             <div>
                                 <h3 className="text-xl font-bold mb-4">links</h3>
                                 <ul className="space-y-2">
-                                    <li><a href="${pageContext.request.contextPath}/" className="text-gray-400 hover:text-white">home</a></li>
-                                    <li><a href="${pageContext.request.contextPath}/login" className="text-gray-400 hover:text-white">login/register</a></li>
-                                    <li><a href="${pageContext.request.contextPath}/profile" className="text-gray-400 hover:text-white">profile</a></li>
+                                    <li><a href={contextPath + "/"} className="text-gray-400 hover:text-white">home</a></li>
+                                    <li><a href={contextPath + "/login"} className="text-gray-400 hover:text-white">login/register</a></li>
+                                    <li><a href={contextPath + "/profile"} className="text-gray-400 hover:text-white">profile</a></li>
                                 </ul>
                             </div>
                             <div>
@@ -294,7 +295,7 @@
             );
         };
         
-        // 聊天盒子组件
+        // chat box component
         const ChatBox = () => {
             const [isOpen, setIsOpen] = React.useState(false);
             const [messages, setMessages] = React.useState([]);
@@ -304,37 +305,37 @@
             const [chatSize, setChatSize] = React.useState({ width: 500, height: 400 });
             const chatRef = React.useRef(null);
             
-            // 处理Markdown格式的函数
+            // handle markdown format function
             const formatMarkdown = (text) => {
                 if (!text) return '';
                 
-                // 处理代码块 ```code```
+                // handle code block ```code```
                 text = text.replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-800 text-gray-200 p-2 rounded my-2 overflow-x-auto"><code>$1</code></pre>');
                 
-                // 处理行内代码 `code`
+                // handle inline code `code`
                 text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-gray-800 px-1 rounded">$1</code>');
                 
-                // 处理标题 # Heading
+                // handle title # Heading
                 text = text.replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold my-2">$1</h1>');
                 text = text.replace(/^## (.*$)/gm, '<h2 class="text-lg font-bold my-2">$1</h2>');
                 text = text.replace(/^### (.*$)/gm, '<h3 class="text-md font-bold my-2">$1</h3>');
                 
-                // 处理粗体 **text**
+                // handle bold **text**
                 text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 
-                // 处理斜体 *text*
+                // handle italic *text*
                 text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
                 
-                // 处理无序列表 - item
+                // handle unordered list - item
                 text = text.replace(/^\s*-\s*(.*$)/gm, '<li class="ml-4">• $1</li>');
                 
-                // 处理有序列表 1. item
+                // handle ordered list 1. item
                 text = text.replace(/^\s*(\d+)\.\s*(.*$)/gm, '<li class="ml-4">$1. $2</li>');
                 
-                // 处理分隔线 ---
+                // handle separator ---
                 text = text.replace(/^\s*---\s*$/gm, '<hr class="my-2 border-gray-300" />');
                 
-                // 处理表格
+                // handle table
                 if (text.includes('|')) {
                     const lines = text.split('\n');
                     let inTable = false;
@@ -348,7 +349,7 @@
                                 inTable = true;
                             }
                             
-                            // 处理表头或内容行
+                            // handle table header or content line
                             const cells = line.split('|').filter(cell => cell.trim() !== '');
                             const tag = !headerProcessed ? 'th' : 'td';
                             const cellClass = !headerProcessed ? 'font-bold border px-2 py-1 bg-gray-100' : 'border px-2 py-1';
@@ -359,10 +360,10 @@
                             });
                             tableHTML += '</tr>';
                             
-                            // 检查下一行是否为分隔符行 (| --- | --- |)
+                            // check if the next line is a separator line (| --- | --- |)
                             if (!headerProcessed && i + 1 < lines.length && lines[i + 1].includes('-')) {
                                 headerProcessed = true;
-                                i++; // 跳过分隔符行
+                                i++; // skip separator line
                             }
                         } else if (inTable) {
                             inTable = false;
@@ -381,20 +382,20 @@
                     text = lines.join('\n');
                 }
                 
-                // 处理正常链接 [text](url)
+                // handle normal link [text](url)
                 text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:underline" target="_blank">$1</a>');
                 
-                // 处理段落和换行
-                // 先替换双换行为临时标记
+                // handle paragraph and line break
+                // first replace double line break with a temporary marker
                 text = text.replace(/\n\s*\n/g, '{{PARAGRAPH_BREAK}}');
                 
-                // 将单个换行替换为<br>
+                // replace single line break with <br>
                 text = text.replace(/\n/g, '<br>');
                 
-                // 恢复段落
+                // restore paragraph
                 text = text.replace(/{{PARAGRAPH_BREAK}}/g, '</p><p class="my-2">');
                 
-                // 包装在段落标签中
+                // wrap in paragraph tags
                 if (!text.startsWith('<')) {
                     text = '<p class="my-2">' + text;
                 }
@@ -407,21 +408,20 @@
 
             const handleSend = () => {
                 if (input.trim()) {
-                    // 添加用户消息到聊天记录
+                    // add user message to chat history
                     const userMessage = { text: input, sender: 'user' };
                     setMessages(prev => [...prev, userMessage]);
                     
-                    // 清空输入框
+                    // clear input
                     setInput('');
                     
-                    // 显示加载状态
+                    // show loading status
                     setIsLoading(true);
                     
-                    // 调用后端AI聊天API
-                    const contextPath = "${pageContext.request.contextPath}";
+                    // call backend AI chat API
                     const url = contextPath + "/api/chat?sessionId=" + encodeURIComponent(sessionId) + "&message=" + encodeURIComponent(input.trim());
                     
-                    // 发送请求
+                    // send request
                     fetch(url, {
                         method: 'POST',
                         headers: {
@@ -435,7 +435,7 @@
                         return response.json();
                     })
                     .then(data => {
-                        // 添加AI回复到聊天记录
+                        // add AI reply to chat history
                         setMessages(prev => [...prev, { 
                             text: data.message, 
                             sender: 'system' 
@@ -454,7 +454,7 @@
                 }
             };
             
-            // 处理按下Enter键事件
+            // handle Enter key event
             const handleKeyDown = (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -464,7 +464,7 @@
             
             return (
                 <>
-                    {/* 聊天按钮 */}
+                    {/* chat button */}
                     <button 
                         onClick={() => setIsOpen(!isOpen)}
                         className="fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 z-50"
@@ -474,7 +474,7 @@
                         </svg>
                     </button>
                     
-                    {/* 聊天窗口 */}
+                    {/* chat window */}
                     {isOpen && (
                         <div 
                             ref={chatRef}
@@ -563,7 +563,7 @@
                                 </div>
                             </div>
                             
-                            {/* 调整大小的句柄 */}
+                            {/* handle resize */}
                             <div 
                                 className="absolute top-0 left-0 w-8 h-8 cursor-nwse-resize z-10 flex items-start justify-start"
                                 onMouseDown={(e) => {
@@ -582,7 +582,7 @@
                                         const newWidth = Math.max(300, startWidth + diffX);
                                         const newHeight = Math.max(300, startHeight + diffY);
                                         
-                                        // 修改元素样式保持右下角位置不变
+                                        // modify element style to keep the bottom right corner position
                                         chatRef.current.style.right = startRight + 'px';
                                         chatRef.current.style.bottom = startBottom + 'px';
                                         chatRef.current.style.left = 'auto';

@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <title>User Home - Stock Recommendation System</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- React需要的脚本 -->
+    <!-- React scripts -->
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -18,7 +18,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        /* Markdown内容样式 */
+        /* Markdown content style */
         .markdown-content {
             font-size: 0.95rem;
             line-height: 1.5;
@@ -55,7 +55,7 @@
     </style>
 </head>
 <body>
-    <!-- 将数据放入隐藏的div，但不直接进行JS解析 -->
+    <!-- put data into hidden div, but not parse JS directly -->
     <div id="user-data" style="display:none" 
          data-id="${user.id}" 
          data-email="${user.email}" 
@@ -64,7 +64,7 @@
          data-balance="${accountBalance}">
     </div>
     
-    <!-- 用户持股数据 -->
+    <!-- user holdings data -->
     <div id="holdings-data" style="display:none">
         <c:forEach items="${userHoldings}" var="holding">
             <div class="holding-item" 
@@ -75,7 +75,7 @@
         </c:forEach>
     </div>
     
-    <!-- 推荐股票数据 -->
+    <!-- recommended stocks data -->
     <div id="recommended-data" style="display:none">
         <c:forEach items="${recommendedStocks}" var="stock">
             <div class="stock-item" 
@@ -86,12 +86,14 @@
         </c:forEach>
     </div>
     
-    <!-- React挂载点 -->
+    <!-- React mount point -->
     <div id="profile-root" class="container mx-auto px-4 py-8"></div>
     
-    <!-- React组件 (Profile, Holdings, ChatBox等) -->
+    <!-- React components (Profile, Holdings, ChatBox, etc.) -->
     <script type="text/babel">
-        // 从DOM元素中获取用户数据
+        const contextPath = "${pageContext.request.contextPath}";
+        
+        // get user data from DOM element
         const userDataElement = document.getElementById('user-data');
         const USER_DATA = {
             id: userDataElement.getAttribute('data-id'),
@@ -101,7 +103,7 @@
             accountBalance: userDataElement.getAttribute('data-balance')
         };
         
-        // 从DOM元素中获取持股数据
+        // get holdings data from DOM element
         const USER_HOLDINGS = [];
         const holdingElements = document.querySelectorAll('#holdings-data .holding-item');
         holdingElements.forEach(element => {
@@ -112,7 +114,7 @@
             });
         });
         
-        // 从DOM元素中获取推荐股票数据
+        // get recommended stocks data from DOM element
         const RECOMMENDED_STOCKS = [];
         const stockElements = document.querySelectorAll('#recommended-data .stock-item');
         stockElements.forEach(element => {
@@ -154,8 +156,16 @@
                                         <span className="font-medium text-indigo-700">{stock.code}</span>
                                         <p className="text-sm text-gray-600">{stock.companyName}</p>
                                     </div>
-                                    <div className="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm">
-                                        holding: {stock.quantity}
+                                    <div className="flex items-center">
+                                        <div className="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm mr-2">
+                                            holding: {stock.quantity}
+                                        </div>
+                                        <a href={contextPath + "/stocks/detail?code=" + stock.code} 
+                                           className="text-indigo-600 hover:text-indigo-800">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </a>
                                     </div>
                                 </div>
                             ))}
@@ -179,8 +189,16 @@
                                         <span className="font-medium text-indigo-700">{stock.code}</span>
                                         <p className="text-sm text-gray-600">{stock.companyName}</p>
                                     </div>
-                                    <div className={`${stock.priceChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} py-1 px-3 rounded-full text-sm`}>
-                                        {stock.priceChange >= 0 ? '+' : ''}{stock.priceChange}
+                                    <div className="flex items-center">
+                                        <div className={`${stock.priceChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} py-1 px-3 rounded-full text-sm mr-2`}>
+                                            {stock.priceChange >= 0 ? '+' : ''}{stock.priceChange}
+                                        </div>
+                                        <a href={contextPath + "/stocks/detail?code=" + stock.code} 
+                                           className="text-indigo-600 hover:text-indigo-800">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </a>
                                     </div>
                                 </div>
                             ))}
@@ -199,13 +217,15 @@
                         <div className="flex justify-between items-center">
                             <div className="flex items-center">
                                 <h1 className="text-xl font-bold text-indigo-700">Stock Recommendation System</h1>
-                                <a href="${pageContext.request.contextPath}/" className="ml-4 text-gray-500 hover:text-indigo-600 transition duration-150">
-                                    Home
-                                </a>
+                                <div className="flex items-center">
+                                    <a href={contextPath + "/"} className="ml-4 text-gray-500 hover:text-indigo-600 transition duration-150">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                    </a>
+                                    <a href={contextPath + "/logout"} className="text-gray-500 hover:text-red-500 transition duration-150">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                    </a>
+                                </div>
                             </div>
-                            <a href="${pageContext.request.contextPath}/logout" className="text-gray-500 hover:text-red-500 transition duration-150">
-                                logout
-                            </a>
                         </div>
                     </nav>
                     
@@ -219,7 +239,7 @@
             );
         };
         
-        // 聊天盒子组件
+        // chat box component
         const ChatBox = () => {
             const [isOpen, setIsOpen] = React.useState(false);
             const [messages, setMessages] = React.useState([]);
@@ -229,37 +249,37 @@
             const [chatSize, setChatSize] = React.useState({ width: 500, height: 400 });
             const chatRef = React.useRef(null);
             
-            // 处理Markdown格式的函数
+            // handle markdown format
             const formatMarkdown = (text) => {
                 if (!text) return '';
                 
-                // 处理代码块 ```code```
+                // handle code block ```code```
                 text = text.replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-800 text-gray-200 p-2 rounded my-2 overflow-x-auto"><code>$1</code></pre>');
                 
-                // 处理行内代码 `code`
+                // handle inline code `code`
                 text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-gray-800 px-1 rounded">$1</code>');
                 
-                // 处理标题 # Heading
+                // handle title # Heading
                 text = text.replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold my-2">$1</h1>');
                 text = text.replace(/^## (.*$)/gm, '<h2 class="text-lg font-bold my-2">$1</h2>');
                 text = text.replace(/^### (.*$)/gm, '<h3 class="text-md font-bold my-2">$1</h3>');
                 
-                // 处理粗体 **text**
+                // handle bold **text**
                 text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 
-                // 处理斜体 *text*
+                // handle italic *text*
                 text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
                 
-                // 处理无序列表 - item
+                // handle unordered list - item
                 text = text.replace(/^\s*-\s*(.*$)/gm, '<li class="ml-4">• $1</li>');
                 
-                // 处理有序列表 1. item
+                // handle ordered list 1. item
                 text = text.replace(/^\s*(\d+)\.\s*(.*$)/gm, '<li class="ml-4">$1. $2</li>');
                 
-                // 处理分隔线 ---
+                // handle separator ---
                 text = text.replace(/^\s*---\s*$/gm, '<hr class="my-2 border-gray-300" />');
                 
-                // 处理表格
+                // handle table
                 if (text.includes('|')) {
                     const lines = text.split('\n');
                     let inTable = false;
@@ -273,7 +293,7 @@
                                 inTable = true;
                             }
                             
-                            // 处理表头或内容行
+                            // handle table header or content line
                             const cells = line.split('|').filter(cell => cell.trim() !== '');
                             const tag = !headerProcessed ? 'th' : 'td';
                             const cellClass = !headerProcessed ? 'font-bold border px-2 py-1 bg-gray-100' : 'border px-2 py-1';
@@ -284,10 +304,10 @@
                             });
                             tableHTML += '</tr>';
                             
-                            // 检查下一行是否为分隔符行 (| --- | --- |)
+                            // check if the next line is a separator line (| --- | --- |)
                             if (!headerProcessed && i + 1 < lines.length && lines[i + 1].includes('-')) {
                                 headerProcessed = true;
-                                i++; // 跳过分隔符行
+                                i++; // skip the separator line
                             }
                         } else if (inTable) {
                             inTable = false;
@@ -306,20 +326,20 @@
                     text = lines.join('\n');
                 }
                 
-                // 处理正常链接 [text](url)
+                // handle normal link [text](url)
                 text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 hover:underline" target="_blank">$1</a>');
                 
-                // 处理段落和换行
-                // 先替换双换行为临时标记
+                // handle paragraph and line break
+                // first replace double line break with a temporary marker
                 text = text.replace(/\n\s*\n/g, '{{PARAGRAPH_BREAK}}');
                 
-                // 将单个换行替换为<br>
+                // replace single line break with <br>
                 text = text.replace(/\n/g, '<br>');
                 
-                // 恢复段落
+                // restore paragraph
                 text = text.replace(/{{PARAGRAPH_BREAK}}/g, '</p><p class="my-2">');
                 
-                // 包装在段落标签中
+                // wrap in paragraph tags
                 if (!text.startsWith('<')) {
                     text = '<p class="my-2">' + text;
                 }
@@ -332,21 +352,20 @@
 
             const handleSend = () => {
                 if (input.trim()) {
-                    // 添加用户消息到聊天记录
+                    // add user message to chat history
                     const userMessage = { text: input, sender: 'user' };
                     setMessages(prev => [...prev, userMessage]);
                     
-                    // 清空输入框
+                    // clear input
                     setInput('');
                     
-                    // 显示加载状态
+                    // show loading status
                     setIsLoading(true);
                     
-                    // 调用后端AI聊天API
-                    const contextPath = "${pageContext.request.contextPath}";
+                    // call backend AI chat API
                     const url = contextPath + "/api/chat?sessionId=" + encodeURIComponent(sessionId) + "&message=" + encodeURIComponent(input.trim());
                     
-                    // 发送请求
+                    // send request
                     fetch(url, {
                         method: 'POST',
                         headers: {
@@ -360,7 +379,7 @@
                         return response.json();
                     })
                     .then(data => {
-                        // 添加AI回复到聊天记录
+                        // add AI reply to chat history
                         setMessages(prev => [...prev, { 
                             text: data.message, 
                             sender: 'system' 
@@ -379,7 +398,7 @@
                 }
             };
             
-            // 处理按下Enter键事件
+            // handle Enter key event
             const handleKeyDown = (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -408,9 +427,9 @@
                             }}
                         >
                             <div className="p-4 bg-indigo-600 text-white rounded-t-lg flex justify-between items-center">
-                                <h3 className="font-bold">AI股票助手</h3>
+                                <h3 className="font-bold">AI Stock Assistant</h3>
                                 <div className="flex items-center">
-                                    <span className="text-xs text-gray-200 mr-2">可拖拽调整大小</span>
+                                    <span className="text-xs text-gray-200 mr-2">Drag to resize</span>
                                     <button onClick={() => setIsOpen(false)} className="text-white">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -423,7 +442,7 @@
                                 <div className="p-4">
                                     {messages.length === 0 ? (
                                         <div className="text-center text-gray-500 py-8">
-                                            <p>您好，{USER_DATA.firstName}！I am AI stock assistant, you can ask me about your holdings or other investment questions, for example:</p>
+                                            <p>Hello, {USER_DATA.firstName}! I am AI stock assistant, you can ask me about your holdings or other investment questions, for example:</p>
                                             <p className="mt-2 text-indigo-600">- Analyze my holdings</p>
                                             <p className="text-indigo-600">- Is NVDA a good investment choice?</p>
                                             <p className="text-indigo-600">- How to optimize my investment portfolio</p>
@@ -486,7 +505,7 @@
                                 </div>
                             </div>
                             
-                            {/* 调整大小的句柄 */}
+                            {/* handle resize */}
                             <div 
                                 className="absolute top-0 left-0 w-8 h-8 cursor-nwse-resize z-10 flex items-start justify-start"
                                 onMouseDown={(e) => {
@@ -505,7 +524,7 @@
                                         const newWidth = Math.max(300, startWidth + diffX);
                                         const newHeight = Math.max(300, startHeight + diffY);
                                         
-                                        // 修改元素样式保持右下角位置不变
+                                        // modify element style to keep the bottom right corner position
                                         chatRef.current.style.right = startRight + 'px';
                                         chatRef.current.style.bottom = startBottom + 'px';
                                         chatRef.current.style.left = 'auto';
@@ -536,11 +555,17 @@
             );
         };
         
+        const App = () => {
+            return (
+                <>
+                    <UserProfile />
+                    <ChatBox />
+                </>
+            );
+        };
+        
         ReactDOM.render(
-            <>
-                <UserProfile />
-                <ChatBox />
-            </>, 
+            <App />, 
             document.getElementById('profile-root')
         );
     </script>

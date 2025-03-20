@@ -1,6 +1,5 @@
 package com.example.controller;
 
-import com.example.dao.StockDao;
 import com.example.model.Stock;
 import com.example.model.StockDetail;
 import com.example.model.StockNews;
@@ -27,7 +26,7 @@ public class StockController {
         this.newsService = newsService;
     }
 
-    // 显示股票列表页面
+    // show stock list page
     @GetMapping("")
     public String listStocks(@RequestParam(required = false) String keyword, 
                             @RequestParam(required = false) String industry,
@@ -35,17 +34,17 @@ public class StockController {
         List<Stock> stocks;
         
         if (keyword != null && !keyword.isEmpty()) {
-            // 基于关键词搜索
+            // search stock by keyword
             stocks = stockService.searchStock(keyword);
             model.addAttribute("searchType", "keyword");
             model.addAttribute("searchValue", keyword);
         } else if (industry != null && !industry.isEmpty()) {
-            // 基于行业过滤
+            // filter stock by industry
             stocks = stockService.findByIndustry(industry);
             model.addAttribute("searchType", "industry");
             model.addAttribute("searchValue", industry);
         } else {
-            // 获取所有股票
+            // get all stocks
             stocks = stockService.findAllStocks();
         }
         
@@ -53,7 +52,7 @@ public class StockController {
         return "stock/list";
     }
     
-    // 显示股票详情页面
+    // show stock detail page
     @GetMapping("/detail")
     public String showStockDetail(@RequestParam String code, Model model) {
         Stock stock = stockService.getStock(code);
@@ -77,20 +76,6 @@ public class StockController {
         return "stock/detail";
     }
     
-    // API接口 - 搜索股票
-    @GetMapping("/api/search")
-    @ResponseBody
-    public List<Stock> search(@RequestParam String keyword) {
-        return stockService.searchStock(keyword);
-    }
-
-    // API接口 - 获取股票详情
-    @GetMapping("/api/detail")
-    @ResponseBody
-    public StockDetail getDetail(@RequestParam String stockCode) {
-        return stockService.getStockDetail(stockCode);
-    }
-
     // API接口 - 收藏股票
     @PostMapping("/api/favorite")
     @ResponseBody

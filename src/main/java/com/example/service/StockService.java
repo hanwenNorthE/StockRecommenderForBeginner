@@ -23,24 +23,27 @@ public class StockService {
         this.stockDetailDao = stockDetailDao;
     }
     
-    // 根据关键字搜索股票
+    // search stock by keyword
     public List<Stock> searchStock(String keyword) {
-        return stockDao.findByCompanyName(keyword);
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        return stockDao.search(keyword);
     }
     
-    // 获取股票详情
+    // get stock detail
     public StockDetail getStockDetail(String stockCode) {
         return stockDetailDao.findByStockCode(stockCode);
     }
     
-    // 获取热门股票
+    // get hot stocks
     public List<Stock> getHotStocks() {
         try {
-            // 获取价格变动最大的5支股票
+            // get the top 5 stocks with the highest price change
             List<Stock> hotStocks = stockDao.findByPriceChangeGreaterThan(0);
             return hotStocks.size() > 5 ? hotStocks.subList(0, 5) : hotStocks;
         } catch (Exception e) {
-            // 如果数据库查询失败，返回模拟数据
+            // if the database query fails, return simulated data
             List<Stock> hotStocks = new ArrayList<>();
             
             hotStocks.add(new Stock("AAPL", "Apple Inc.", 150.25, 2.35, 2.45e12, "Technology"));
@@ -53,17 +56,17 @@ public class StockService {
         }
     }
     
-    // 查找所有股票
+    // find all stocks
     public List<Stock> findAllStocks() {
         return stockDao.findAll();
     }
     
-    // 根据行业查找
+    // find stocks by industry
     public List<Stock> findByIndustry(String industry) {
         return stockDao.findByIndustry(industry);
     }
     
-    // 获取股票详情
+    // get stock detail
     public Stock getStock(String code) {
         return stockDao.findById(code).orElse(null);
     }

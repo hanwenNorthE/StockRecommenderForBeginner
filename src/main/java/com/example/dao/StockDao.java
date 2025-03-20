@@ -5,36 +5,43 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Stock数据访问接口
+ * Stock data access interface
  */
 public interface StockDao extends BaseDao<Stock, String> {
     
     /**
-     * 根据公司名称查找股票
-     * @param companyName 公司名称
-     * @return 符合条件的股票列表
+     * find stocks by company name
+     * @param companyName company name
+     * @return list of stocks
      */
     List<Stock> findByCompanyName(String companyName);
     
     /**
-     * 根据行业查找股票
-     * @param industry 行业
-     * @return 符合条件的股票列表
+     * comprehensive search stocks, support code and company name
+     * @param keyword search keyword
+     * @return list of stocks
+     */
+    List<Stock> search(String keyword);
+    
+    /**
+     * find stocks by industry
+     * @param industry industry
+     * @return list of stocks
      */
     List<Stock> findByIndustry(String industry);
     
     /**
-     * 查找价格变动超过指定值的股票
-     * @param changePercent 变动百分比
-     * @return 符合条件的股票列表
+     * find stocks by price change greater than specified value
+     * @param changePercent change percent
+     * @return list of stocks
      */
     List<Stock> findByPriceChangeGreaterThan(double changePercent);
     
     /**
-     * 根据市值范围查找股票
-     * @param minValue 最小市值
-     * @param maxValue 最大市值
-     * @return 符合条件的股票列表
+     * find stocks by market value between specified value
+     * @param minValue minimum market value
+     * @param maxValue maximum market value
+     * @return list of stocks
      */
     List<Stock> findByMarketValueBetween(double minValue, double maxValue);
 } 
