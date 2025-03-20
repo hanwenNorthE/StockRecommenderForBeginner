@@ -4,33 +4,77 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>用户主页 - 股票推荐系统</title>
+    <title>Client Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
+       body {
             padding-top: 20px;
+            background-color: #F5F5F5; /* 浅灰色背景 */
+            color: #333333; /* 深灰色文本 */
         }
+
         .container {
             max-width: 900px;
+            margin: 0 auto;
         }
+
         .user-info {
-            background-color: #f8f9fa;
+            background-color: #003366; /* 深蓝色背景 */
+            color: #C0C0C0; /* 亮银色文本 */
             padding: 30px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
+
+        .user-info h2 {
+            color: #C0C0C0; /* 亮银色标题 */
+        }
+
         .card {
+            background-color: #FFFFFF; /* 卡片背景使用白色 */
+            border: 1px solid #C0C0C0; /* 卡片边框为亮银色 */
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
         }
+
+        .card h3 {
+            color: #003366; /* 卡片标题使用深蓝色 */
+        }
+
+        button {
+            background-color: #1E90FF; /* 电光蓝按钮 */
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #32CD32; /* 悬浮时使用翠绿色 */
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
         <!-- 用户基本信息与账户余额 -->
         <div class="user-info">
-            <h1>欢迎, ${user.username}!</h1>
-            <p>邮箱: ${user.email}</p>
-            <p>账户余额: ￥<c:out value="${accountBalance}" /></p>
+            <h1>
+                Welcome, 
+                <c:choose>
+                    <c:when test="${not empty user.name}">
+                        ${User.name.getFirstName()} ${User.name.getLastName()}
+                    </c:when>
+                    <c:otherwise>
+                        ${User.getEmail()}
+                    </c:otherwise>
+                </c:choose>
+                !
+            </h1>
+            <p>E-mail: ${User.getEmail()}</p>
+            <p>Account Balance: $<c:out value="${accountBalance}" /></p>
         </div>
         
         <div class="row">
@@ -38,17 +82,17 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        持有的股票
+                        Current Holding
                     </div>
                     <ul class="list-group list-group-flush">
                         <c:forEach items="${userHoldings}" var="holding">
                             <li class="list-group-item">
                                 ${holding.code} - ${holding.companyName}
-                                <span class="badge bg-info float-end">持有: ${holding.quantity}</span>
+                                <span class="badge bg-info float-end">Holding: ${holding.quantity}</span>
                             </li>
                         </c:forEach>
                         <c:if test="${empty userHoldings}">
-                            <li class="list-group-item">暂无持仓</li>
+                            <li class="list-group-item">Not Investing</li>
                         </c:if>
                     </ul>
                 </div>
@@ -58,7 +102,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        根据您的持仓推荐的股票
+                        Recommended Stocks
                     </div>
                     <ul class="list-group list-group-flush">
                         <c:forEach items="${recommendedStocks}" var="stock">
@@ -70,7 +114,7 @@
                             </li>
                         </c:forEach>
                         <c:if test="${empty recommendedStocks}">
-                            <li class="list-group-item">暂无推荐股票</li>
+                            <li class="list-group-item">Current Unavaliable</li>
                         </c:if>
                     </ul>
                 </div>

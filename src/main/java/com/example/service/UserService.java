@@ -1,8 +1,11 @@
 package com.example.service;
 
+import org.springframework.stereotype.Service;
+
 import com.example.model.User;
 import com.example.model.UserPreference;
 
+@Service
 public class UserService {
     
     // 用户注册

@@ -1,5 +1,5 @@
 CREATE SCHEMA IF NOT EXISTS StockRecommender; 
- 
+USE StockRecommender;
 DROP TABLE IF EXISTS ai_chat_messages; 
 DROP TABLE IF EXISTS ai_chat_sessions; 
 DROP TABLE IF EXISTS holdings; 
@@ -37,6 +37,10 @@ CREATE TABLE users (
   middleName VARCHAR(100), 
   PRIMARY KEY (id) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 
+INSERT INTO users (email, password, firstName, lastName, middleName)
+VALUES ('jane.doe@example.com', '123456', 'Jane', 'Doe', 'M');
+
+
  
 CREATE TABLE portfolios ( 
   id BIGINT NOT NULL AUTO_INCREMENT, 
