@@ -157,9 +157,9 @@
          </div>
       </div>
       
-      <!-- 数据库检查工具链接 -->
+      <!-- database check tool link -->
       <div class="admin-links">
-         <a href="/dataCheck" class="btn btn-outline-secondary">数据库检查工具</a>
+         <a href="/dataCheck" class="btn btn-outline-secondary">database check tool</a>
       </div>
    </div>
 

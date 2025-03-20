@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpSession;
 
 /**
- * 登录控制器
+ * login controller
  */
 @Controller
 public class LoginController {
@@ -26,7 +26,7 @@ public class LoginController {
     }
     
     /**
-     * 显示登录页面
+     * show login page
      */
     @GetMapping("/login")
     public String showLoginPage() {
@@ -34,7 +34,7 @@ public class LoginController {
     }
     
     /**
-     * 处理登录请求
+     * handle login request
      */
     @PostMapping("/login")
     public String login(@RequestParam("email") String email,
@@ -42,7 +42,7 @@ public class LoginController {
                       HttpSession session,
                       Model model) {
         
-        System.out.println("login方法被调用，email=" + email);
+        System.out.println("login method called, email=" + email);
         
         try {
             // 查找用户
@@ -50,29 +50,29 @@ public class LoginController {
             
             // 检查用户是否存在且密码是否匹配
             if (user != null && user.getPassword().equals(password)) {
-                System.out.println("用户登录成功，email=" + email);
+                System.out.println("user login successfully, email=" + email);
                 
                 // 将用户信息存入session
                 session.setAttribute("user", user);
-                System.out.println("用户信息已存入session，user.id=" + user.getId());
+                System.out.println("user info added to session, user.id=" + user.getId());
                 
                 // 返回用户资料页面
                 return "profilePage";
             } else {
-                System.out.println("用户登录失败，email=" + email);
-                model.addAttribute("error", "邮箱或密码错误");
+                System.out.println("user login failed, email=" + email);
+                model.addAttribute("error", "wrong email or password");
                 return "loginPage";
             }
         } catch (Exception e) {
-            System.out.println("登录过程中发生异常: " + e.getMessage());
+            System.out.println("login failed: " + e.getMessage());
             e.printStackTrace();
-            model.addAttribute("error", "登录失败：" + e.getMessage());
+            model.addAttribute("error", "login failed: " + e.getMessage());
             return "loginPage";
         }
     }
     
     /**
-     * 处理用户注册请求
+     * handle user register request
      */
     @PostMapping("/register")
     public String register(@RequestParam("email") String email,
@@ -81,93 +81,93 @@ public class LoginController {
                         @RequestParam("lastName") String lastName,
                         Model model) {
         
-        System.out.println("register方法被调用，email=" + email);
+        System.out.println("register method called, email=" + email);
         
         try {
-            // 检查用户是否已存在
+            // check if user already exists
             if (userService.findByEmail(email) != null) {
-                System.out.println("用户已存在，email=" + email);
-                model.addAttribute("error", "该邮箱已被注册");
+                System.out.println("user already exist, email=" + email);
+                model.addAttribute("error", "the email has been registered");
                 return "loginPage";
             }
             
-            // 创建新用户
+            // create new user
             User user = new User();
             user.setEmail(email);
             user.setPassword(password);
             
-            // 设置用户姓名
+            // set user name
             Name name = new Name();
             name.setFirstName(firstName);
             name.setLastName(lastName);
             user.setName(name);
             
-            // 保存用户
+            // save user
             userService.register(user);
-            System.out.println("用户注册成功，email=" + email);
+            System.out.println("user register successfully, email=" + email);
             
-            // 返回登录页面并显示成功消息
-            model.addAttribute("successMessage", "注册成功，请登录");
+            // return login page and show success message
+            model.addAttribute("successMessage", "register successfully, please login");
             return "loginPage";
             
         } catch (Exception e) {
-            System.out.println("注册过程中发生异常: " + e.getMessage());
+            System.out.println("register failed: " + e.getMessage());
             e.printStackTrace();
-            model.addAttribute("error", "注册失败：" + e.getMessage());
+            model.addAttribute("error", "register failed: " + e.getMessage());
             return "loginPage";
         }
     }
     
     /**
-     * 显示用户资料页面
+     * show user profile page
      */
     @GetMapping("/profile")
     public String showProfile(HttpSession session, Model model) {
-        System.out.println("=== 进入showProfile方法 ===");
+        System.out.println("=== enter showProfile method ===");
         
-        // 打印session中的所有属性
-        System.out.println("Session属性列表:");
+        // print all attributes in session
+        System.out.println("Session attribute list:");
         java.util.Enumeration<String> attributeNames = session.getAttributeNames();
         while (attributeNames.hasMoreElements()) {
             String name = attributeNames.nextElement();
             System.out.println("  - " + name + ": " + session.getAttribute(name));
         }
         
-        // 检查用户是否登录
+        // check if user is logged in
         User user = (User) session.getAttribute("user");
-        System.out.println("从session获取user: " + (user != null ? "存在" : "不存在"));
+        System.out.println("get user from session: " + (user != null ? "exist" : "not exist"));
         
         if (user == null) {
-            System.out.println("用户未登录，返回登录页面");
-            model.addAttribute("error", "请先登录");
+            System.out.println("user not login, return login page");
+            model.addAttribute("error", "please login first");
             return "loginPage";
         }
         
-        System.out.println("用户已登录: " + user.getEmail());
-        System.out.println("用户ID: " + user.getId());
-        System.out.println("用户姓名: " + (user.getName() != null ? user.getName().getFirstName() : "null"));
+        System.out.println("user login: " + user.getEmail());
+        System.out.println("user id: " + user.getId());
+        System.out.println("user name: " + (user.getName() != null ? user.getName().getFirstName() : "null"));
         
-        // 将用户信息添加到模型
+        // add user info to model
         model.addAttribute("user", user);
-        System.out.println("用户信息已添加到模型");
+        System.out.println("user info added to model");
         
-        // 添加一些默认数据
+        // add some default data, may need change later
         model.addAttribute("accountBalance", "10000.00");
         model.addAttribute("userHoldings", new java.util.ArrayList<>());
         model.addAttribute("recommendedStocks", new java.util.ArrayList<>());
         
-        System.out.println("准备返回profilePage视图");
+        System.out.println("prepare to return profilePage view");
         return "profilePage";
     }
     
     /**
-     * 处理登出请求
+     * handle logout request
      */
     @GetMapping("/logout")
     public String logout(HttpSession session, Model model) {
-        // 清除session
+        // invalidate session
         session.invalidate();
-        model.addAttribute("successMessage", "您已成功退出登录");
+        model.addAttribute("successMessage", "you have successfully logged out");
         return "loginPage";
     }
 } 

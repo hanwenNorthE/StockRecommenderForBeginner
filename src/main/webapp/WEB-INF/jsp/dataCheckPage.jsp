@@ -134,7 +134,7 @@
                      </div>
                      <div class="mb-3">
                         <label for="limit" class="form-label">display record number:</label>
-                        <input type="number" class="form-control" id="limit" name="limit" min="1" max="100" value="10">
+                        <input type="number" class="form-control" id="limit" name="limit" min="1" max="500" value="10">
                      </div>
                      <button type="submit" class="btn btn-primary w-100">view data</button>
                   </form>
