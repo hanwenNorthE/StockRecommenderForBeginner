@@ -9,17 +9,50 @@
    <style>
       body {
          padding-top: 20px;
+         background-color: #F5F5F5; /* 浅灰色背景 */
+         color: #333333; /* 深灰色文本 */
       }
       .container {
          max-width: 500px;
+         margin: 0 auto;
       }
       .auth-form {
-         background-color: #f8f9fa;
-         padding: 30px;
-         border-radius: 8px;
-         margin-top: 20px;
+        background-color: #003366; /* 深蓝色背景 */
+        color: #C0C0C0; /* 亮银色文本 */
+        padding: 30px;
+        border-radius: 8px;
+        margin-top: 20px;
       }
-      .admin-links {
+      .auth-form h2 {
+        color: #C0C0C0; /* 亮银色标题 */
+      }
+      .auth-form input[type="text"],
+
+      .auth-form input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #C0C0C0; /* 亮银色边框 */
+        border-radius: 5px;
+        background-color: #F5F5F5; /* 输入框背景色 */
+        color: #333333; /* 输入框文本颜色 */
+      }
+
+      .auth-form button {
+        background-color: #1E90FF; /* 电光蓝按钮 */
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 5px;
+        width: 100%;
+        cursor: pointer;
+      }
+
+    .auth-form button:hover {
+        background-color: #32CD32; /* 悬浮时使用翠绿色 */
+      }
+
+    .admin-links {
          text-align: center;
          margin-top: 20px;
          padding: 10px;

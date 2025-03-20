@@ -9,16 +9,39 @@
     <style>
         body {
             padding-top: 20px;
+            background-color: #F5F5F5; /* 使用浅灰色作为整体背景 */
+            color: #333333; /* 深灰色文本 */
         }
         .container {
             max-width: 800px;
+            margin: 0 auto;
         }
         .welcome-section {
-            background-color: #f8f9fa;
+            background-color: #003366; /* 深蓝色背景 */
+            color: #C0C0C0; /* 亮银色文本 */
             padding: 30px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
+
+        .welcome-section h1,
+        .welcome-section p {
+            color: #C0C0C0; /* 亮银色文本 */
+        }
+
+        button {
+            background-color: #1E90FF; /* 电光蓝按钮 */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #32CD32; /* 成功色：翠绿色，作为按钮悬浮时的效果 */
+        }
+        
     </style>
 </head>
 <body>
@@ -41,7 +64,7 @@
     
     <div class="container">
         <div class="welcome-section">
-            <h1 class="text-center">Welcome to Stock Recommendation System</h1>
+            <h1 class="text-center">Stock Recommendation System For Beginners</h1>
             <p class="lead text-center">${message}</p>
         </div>
         
