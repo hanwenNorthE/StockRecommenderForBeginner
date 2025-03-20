@@ -1,31 +1,42 @@
 package com.example.dao.impl;
 
-import com.example.dao.JdbcDaoSupport;
 import com.example.dao.StockDao;
 import com.example.model.Stock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import javax.sql.DataSource;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.sql.Statement;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
  * Stock数据访问实现类
  */
 @Repository
-public class StockDaoImpl extends JdbcDaoSupport implements StockDao {
+public class StockDaoImpl implements StockDao {
 
+    private final JdbcTemplate jdbcTemplate;
+    
+    @Autowired
+    public StockDaoImpl(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+    
     private final RowMapper<Stock> rowMapper = new StockRowMapper();
 
     @Override
     public Optional<Stock> findById(String code) {
         String sql = "SELECT * FROM stocks WHERE code = ?";
         try {
-            Stock stock = getJdbcTemplate().queryForObject(sql, rowMapper, code);
+            Stock stock = jdbcTemplate.queryForObject(sql, rowMapper, code);
             return Optional.ofNullable(stock);
         } catch (Exception e) {
             return Optional.empty();
@@ -35,7 +46,7 @@ public class StockDaoImpl extends JdbcDaoSupport implements StockDao {
     @Override
     public List<Stock> findAll() {
         String sql = "SELECT * FROM stocks";
-        return getJdbcTemplate().query(sql, rowMapper);
+        return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
@@ -43,7 +54,7 @@ public class StockDaoImpl extends JdbcDaoSupport implements StockDao {
         if (existsById(entity.getCode())) {
             // 更新
             String sql = "UPDATE stocks SET companyName = ?, currentPrice = ?, priceChange = ?, marketValue = ?, industry = ? WHERE code = ?";
-            getJdbcTemplate().update(sql, 
+            jdbcTemplate.update(sql, 
                 entity.getCompanyName(),
                 entity.getCurrentPrice(),
                 entity.getPriceChange(),
@@ -54,7 +65,7 @@ public class StockDaoImpl extends JdbcDaoSupport implements StockDao {
         } else {
             // 插入
             String sql = "INSERT INTO stocks (code, companyName, currentPrice, priceChange, marketValue, industry) VALUES (?, ?, ?, ?, ?, ?)";
-            getJdbcTemplate().update(sql, 
+            jdbcTemplate.update(sql, 
                 entity.getCode(),
                 entity.getCompanyName(),
                 entity.getCurrentPrice(),
@@ -69,38 +80,38 @@ public class StockDaoImpl extends JdbcDaoSupport implements StockDao {
     @Override
     public boolean deleteById(String code) {
         String sql = "DELETE FROM stocks WHERE code = ?";
-        return getJdbcTemplate().update(sql, code) > 0;
+        return jdbcTemplate.update(sql, code) > 0;
     }
 
     @Override
     public boolean existsById(String code) {
         String sql = "SELECT COUNT(*) FROM stocks WHERE code = ?";
-        Integer count = getJdbcTemplate().queryForObject(sql, Integer.class, code);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, code);
         return count != null && count > 0;
     }
 
     @Override
     public List<Stock> findByCompanyName(String companyName) {
         String sql = "SELECT * FROM stocks WHERE companyName LIKE ?";
-        return getJdbcTemplate().query(sql, rowMapper, "%" + companyName + "%");
+        return jdbcTemplate.query(sql, rowMapper, "%" + companyName + "%");
     }
 
     @Override
     public List<Stock> findByIndustry(String industry) {
         String sql = "SELECT * FROM stocks WHERE industry = ?";
-        return getJdbcTemplate().query(sql, rowMapper, industry);
+        return jdbcTemplate.query(sql, rowMapper, industry);
     }
 
     @Override
     public List<Stock> findByPriceChangeGreaterThan(double changePercent) {
         String sql = "SELECT * FROM stocks WHERE priceChange > ?";
-        return getJdbcTemplate().query(sql, rowMapper, changePercent);
+        return jdbcTemplate.query(sql, rowMapper, changePercent);
     }
 
     @Override
     public List<Stock> findByMarketValueBetween(double minValue, double maxValue) {
         String sql = "SELECT * FROM stocks WHERE marketValue BETWEEN ? AND ?";
-        return getJdbcTemplate().query(sql, rowMapper, minValue, maxValue);
+        return jdbcTemplate.query(sql, rowMapper, minValue, maxValue);
     }
 
     /**

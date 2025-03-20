@@ -5,6 +5,15 @@ public class Name {
   private String lastName;
   private String middleName;
 
+  public Name() {
+  }
+
+  public Name(String firstName, String lastName, String middleName) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.middleName = middleName;
+  }
+
   // getters and setters
   public String getFirstName() {
     return firstName;

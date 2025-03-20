@@ -22,7 +22,7 @@ public class HelloController {
     
     @GetMapping("/hello")
     public String hello(Model model) {
-        model.addAttribute("message", "欢迎访问股票推荐系统，为初学者打造的投资助手！");
+        model.addAttribute("message", "Welcome to stock recommendation system, a investment assistant for beginners!");
         
         try {
             // 从服务获取热门股票

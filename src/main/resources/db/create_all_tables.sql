@@ -50,7 +50,6 @@ CREATE TABLE user_preferences (
   id BIGINT NOT NULL AUTO_INCREMENT, 
   user_id BIGINT NOT NULL, 
   riskLevel ENUM('LOW', 'MEDIUM', 'HIGH') NOT NULL, 
-  #marketSector VARCHAR(100) NOT NULL, 
   PRIMARY KEY (id), 
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 
@@ -71,7 +70,7 @@ CREATE TABLE user_favorites (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 
  
 CREATE TABLE stock_details (  
-  #stockDetailsId BIGINT NOT NULL AUTO_INCREMENT, 
+  -- stockDetailsId BIGINT NOT NULL AUTO_INCREMENT, 
   code VARCHAR(50) NOT NULL,  
   description TEXT, 
   CONSTRAINT pk_stock_details_code PRIMARY KEY (code) 
@@ -79,7 +78,7 @@ CREATE TABLE stock_details (
  
 CREATE TABLE price_data ( 
   priceDataId BIGINT NOT NULL AUTO_INCREMENT, 
-  code VARCHAR(50), #codestock_detail_id BIGINT, #To store the filename as the stock code 
+  code VARCHAR(50), -- codestock_detail_id BIGINT, -- To store the filename as the stock code 
   date DATETIME, 
   open DOUBLE, 
   high DOUBLE, 
@@ -90,18 +89,18 @@ CREATE TABLE price_data (
   CONSTRAINT pk_price_data_priceDataId PRIMARY KEY (priceDataId), 
   CONSTRAINT fk_price_data_code FOREIGN KEY(code) REFERENCES stock_details(code) 
   ON UPDATE CASCADE ON DELETE SET NULL 
-  #FOREIGN KEY (stock_detail_id) REFERENCES stock_details(id) 
+  -- FOREIGN KEY (stock_detail_id) REFERENCES stock_details(id) 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 
  
 CREATE TABLE stock_news ( 
   id BIGINT NOT NULL AUTO_INCREMENT, 
-  code VARCHAR(50), #stock_detail_id BIGINT, 
+  code VARCHAR(50), -- stock_detail_id BIGINT, 
   title VARCHAR(255), 
   summary TEXT, 
   url VARCHAR(255), 
   publishDate DATETIME, 
   PRIMARY KEY (id), 
-  FOREIGN KEY (code) REFERENCES stock_details(code) #id—>code 
+  FOREIGN KEY (code) REFERENCES stock_details(code) -- id—>code 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 
  
 CREATE TABLE holdings ( 

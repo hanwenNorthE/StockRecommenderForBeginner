@@ -25,14 +25,14 @@
     <!-- 顶部导航栏，包含登录和注册选项 -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
       <div class="container">
-        <a class="navbar-brand" href="hello.jsp">Stock Recommendation System</a>
+        <a class="navbar-brand" href="/hello">Stock Recommendation System</a>
         <div class="collapse navbar-collapse justify-content-end">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="/loginPage.jsp">Login</a>
+              <a class="nav-link" href="/login">Login</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/loginPage.jsp">Register</a>
+              <a class="nav-link" href="/login">Register</a>
             </li>
           </ul>
         </div>

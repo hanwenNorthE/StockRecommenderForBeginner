@@ -1,35 +1,44 @@
-package com.example.dao.impl;
-
-import com.example.dao.JdbcDaoSupport;
+package com.example.dao.impl;    
 import com.example.dao.PriceDataDao;
 import com.example.model.PriceData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import javax.sql.DataSource;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 /**
  * PriceData数据访问实现类
  */
 @Repository
-public class PriceDataDaoImpl extends JdbcDaoSupport implements PriceDataDao {
+public class PriceDataDaoImpl implements PriceDataDao {
 
+    private final JdbcTemplate jdbcTemplate;
+    
+    @Autowired
+    public PriceDataDaoImpl(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+    
     private final RowMapper<PriceData> rowMapper = new PriceDataRowMapper();
 
     @Override
     public Optional<PriceData> findById(Long id) {
         String sql = "SELECT * FROM price_data WHERE priceDataId = ?";
         try {
-            PriceData priceData = getJdbcTemplate().queryForObject(sql, rowMapper, id);
+            PriceData priceData = jdbcTemplate.queryForObject(sql, rowMapper, id);
             return Optional.ofNullable(priceData);
         } catch (Exception e) {
             return Optional.empty();
@@ -39,7 +48,7 @@ public class PriceDataDaoImpl extends JdbcDaoSupport implements PriceDataDao {
     @Override
     public List<PriceData> findAll() {
         String sql = "SELECT * FROM price_data";
-        return getJdbcTemplate().query(sql, rowMapper);
+        return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
@@ -47,7 +56,7 @@ public class PriceDataDaoImpl extends JdbcDaoSupport implements PriceDataDao {
         if (entity.getPriceDataId() != null && existsById(entity.getPriceDataId())) {
             // 更新
             String sql = "UPDATE price_data SET code = ?, date = ?, open = ?, high = ?, low = ?, close = ?, volume = ?, OpenInt = ? WHERE priceDataId = ?";
-            getJdbcTemplate().update(sql, 
+            jdbcTemplate.update(sql, 
                 entity.getCode(),
                 entity.getDate(),
                 entity.getOpen(),
@@ -62,7 +71,7 @@ public class PriceDataDaoImpl extends JdbcDaoSupport implements PriceDataDao {
             // 插入
             KeyHolder keyHolder = new GeneratedKeyHolder();
             String sql = "INSERT INTO price_data (code, date, open, high, low, close, volume, OpenInt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            getJdbcTemplate().update(
+            jdbcTemplate.update(
                 connection -> {
                     PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                     ps.setString(1, entity.getCode());
@@ -88,26 +97,26 @@ public class PriceDataDaoImpl extends JdbcDaoSupport implements PriceDataDao {
     @Override
     public boolean deleteById(Long id) {
         String sql = "DELETE FROM price_data WHERE priceDataId = ?";
-        return getJdbcTemplate().update(sql, id) > 0;
+        return jdbcTemplate.update(sql, id) > 0;
     }
 
     @Override
     public boolean existsById(Long id) {
         String sql = "SELECT COUNT(*) FROM price_data WHERE priceDataId = ?";
-        Integer count = getJdbcTemplate().queryForObject(sql, Integer.class, id);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
 
     @Override
     public List<PriceData> findByCode(String code) {
         String sql = "SELECT * FROM price_data WHERE code = ? ORDER BY date DESC";
-        return getJdbcTemplate().query(sql, rowMapper, code);
+        return jdbcTemplate.query(sql, rowMapper, code);
     }
 
     @Override
     public List<PriceData> findByCodeAndDateBetween(String code, Date startDate, Date endDate) {
         String sql = "SELECT * FROM price_data WHERE code = ? AND date BETWEEN ? AND ? ORDER BY date";
-        return getJdbcTemplate().query(sql, rowMapper, code, 
+        return jdbcTemplate.query(sql, rowMapper, code, 
                 new java.sql.Timestamp(startDate.getTime()), 
                 new java.sql.Timestamp(endDate.getTime()));
     }
@@ -115,7 +124,7 @@ public class PriceDataDaoImpl extends JdbcDaoSupport implements PriceDataDao {
     @Override
     public PriceData findLatestByCode(String code) {
         String sql = "SELECT * FROM price_data WHERE code = ? ORDER BY date DESC LIMIT 1";
-        List<PriceData> results = getJdbcTemplate().query(sql, rowMapper, code);
+        List<PriceData> results = jdbcTemplate.query(sql, rowMapper, code);
         return results.isEmpty() ? null : results.get(0);
     }
 

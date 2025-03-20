@@ -28,7 +28,7 @@
     <div class="container">
         <!-- 用户基本信息与账户余额 -->
         <div class="user-info">
-            <h1>Welcome, ${user.username}!</h1>
+            <h1>Welcome, ${user.name.firstName}!</h1>
             <p>Email: ${user.email}</p>
             <p>Account Balance: ￥<c:out value="${accountBalance}" /></p>
         </div>

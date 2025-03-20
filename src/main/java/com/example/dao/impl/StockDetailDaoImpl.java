@@ -1,10 +1,12 @@
 package com.example.dao.impl;
 
-import com.example.dao.JdbcDaoSupport;
 import com.example.dao.StockDetailDao;
 import com.example.model.StockDetail;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import javax.sql.DataSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,15 +17,22 @@ import java.util.Optional;
  * StockDetail数据访问实现类
  */
 @Repository
-public class StockDetailDaoImpl extends JdbcDaoSupport implements StockDetailDao {
+public class StockDetailDaoImpl implements StockDetailDao {
 
+    private final JdbcTemplate jdbcTemplate;
+    
+    @Autowired
+    public StockDetailDaoImpl(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
+    
     private final RowMapper<StockDetail> rowMapper = new StockDetailRowMapper();
 
     @Override
     public Optional<StockDetail> findById(String code) {
         String sql = "SELECT * FROM stock_details WHERE code = ?";
         try {
-            StockDetail stockDetail = getJdbcTemplate().queryForObject(sql, rowMapper, code);
+            StockDetail stockDetail = jdbcTemplate.queryForObject(sql, rowMapper, code);
             return Optional.ofNullable(stockDetail);
         } catch (Exception e) {
             return Optional.empty();
@@ -33,7 +42,7 @@ public class StockDetailDaoImpl extends JdbcDaoSupport implements StockDetailDao
     @Override
     public List<StockDetail> findAll() {
         String sql = "SELECT * FROM stock_details";
-        return getJdbcTemplate().query(sql, rowMapper);
+        return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
@@ -41,11 +50,11 @@ public class StockDetailDaoImpl extends JdbcDaoSupport implements StockDetailDao
         if (existsById(entity.getCode())) {
             // 更新
             String sql = "UPDATE stock_details SET description = ? WHERE code = ?";
-            getJdbcTemplate().update(sql, entity.getDescription(), entity.getCode());
+            jdbcTemplate.update(sql, entity.getDescription(), entity.getCode());
         } else {
             // 插入
             String sql = "INSERT INTO stock_details (code, description) VALUES (?, ?)";
-            getJdbcTemplate().update(sql, entity.getCode(), entity.getDescription());
+            jdbcTemplate.update(sql, entity.getCode(), entity.getDescription());
         }
         return entity;
     }
@@ -53,20 +62,20 @@ public class StockDetailDaoImpl extends JdbcDaoSupport implements StockDetailDao
     @Override
     public boolean deleteById(String code) {
         String sql = "DELETE FROM stock_details WHERE code = ?";
-        return getJdbcTemplate().update(sql, code) > 0;
+        return jdbcTemplate.update(sql, code) > 0;
     }
 
     @Override
     public boolean existsById(String code) {
         String sql = "SELECT COUNT(*) FROM stock_details WHERE code = ?";
-        Integer count = getJdbcTemplate().queryForObject(sql, Integer.class, code);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, code);
         return count != null && count > 0;
     }
 
     @Override
     public List<StockDetail> findByDescriptionContaining(String keyword) {
         String sql = "SELECT * FROM stock_details WHERE description LIKE ?";
-        return getJdbcTemplate().query(sql, rowMapper, "%" + keyword + "%");
+        return jdbcTemplate.query(sql, rowMapper, "%" + keyword + "%");
     }
 
     @Override

@@ -3,14 +3,19 @@ package com.example.controller;
 import com.example.model.User;
 import com.example.model.UserPreference;
 import com.example.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController {
     
-    // 为简化示例，直接 new 对象，实际项目中建议使用依赖注入（@Autowired）
-    private UserService userService = new UserService();  
+    private final UserService userService;
+    
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/register")
     public String register(@RequestBody User user) {
