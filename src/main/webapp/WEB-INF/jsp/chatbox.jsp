@@ -1,6 +1,6 @@
 <script type="text/babel">
-    // chat box component
-    const ChatBox = () => {
+    // Export the ChatBox component so it can be used in other files
+    window.ChatBox = () => {
         const [isOpen, setIsOpen] = React.useState(false);
         const [messages, setMessages] = React.useState([]);
         const [input, setInput] = React.useState('');
