@@ -23,7 +23,7 @@ public class AIChatService {
     
     private static final String LM_STUDIO_API_URL = "http://localhost:1234/v1/chat/completions";
     private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String OPENROUTER_API_KEY = "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"; //temporary key hardcoded
+    private static final String OPENROUTER_API_KEY = ""; //temporary key hardcoded, replace with your own key
     private static final String DATA_FOLDER_PATH = "src/main/resources/data/";
     
     // 存储会话历史记录
@@ -88,8 +88,6 @@ public class AIChatService {
             // 获取会话历史或创建新的
             StringBuilder history = sessionHistory.computeIfAbsent(sessionId + "_openrouter", k -> new StringBuilder());
             
-            // 检查消息是否包含股票相关查询
-            String stockCode = extractStockCode(message);
             
             
             // 构建系统提示
