@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,10 +22,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class AIChatService {
     
-    private static final String LM_STUDIO_API_URL = "http://localhost:1234/v1/chat/completions";
-    private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String OPENROUTER_API_KEY = ""; //temporary key hardcoded, replace with your own key
-    private static final String DATA_FOLDER_PATH = "src/main/resources/data/";
+    @Value("${ai.chat.lmstudio.url}")
+    private String lmStudioApiUrl;
+    
+    @Value("${ai.chat.openrouter.url}")
+    private String openRouterApiUrl;
+    
+    @Value("${ai.chat.openrouter.key}") 
+    private String openRouterApiKey;
+    
+    @Value("${ai.chat.data.folder}")
+    private String dataFolderPath;
     
     // 存储会话历史记录
     private Map<String, StringBuilder> sessionHistory = new ConcurrentHashMap<>();
@@ -138,7 +146,7 @@ public class AIChatService {
         }
         
         // 检查消息中是否直接包含已知的股票代码
-        File folder = new File(DATA_FOLDER_PATH);
+        File folder = new File(dataFolderPath);
         if (folder.exists() && folder.isDirectory()) {
             File[] files = folder.listFiles();
             if (files != null) {
@@ -158,7 +166,7 @@ public class AIChatService {
     
     // 获取股票历史数据
     private String getStockData(String stockCode) {
-        File file = new File(DATA_FOLDER_PATH + stockCode.toLowerCase() + ".us.txt");
+        File file = new File(dataFolderPath + stockCode.toLowerCase() + ".us.txt");
         if (!file.exists()) {
             System.out.println("Stock data file not found: " + file.getAbsolutePath());
             return "";
@@ -262,7 +270,7 @@ public class AIChatService {
     
     // 发送请求到LM Studio
     private String sendRequestToLMStudio(String jsonInput) throws IOException {
-        URL url = new URL(LM_STUDIO_API_URL);
+        URL url = new URL(lmStudioApiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
@@ -285,11 +293,11 @@ public class AIChatService {
     
     // 发送请求到OpenRouter
     private String sendRequestToOpenRouter(String jsonInput) throws IOException {
-        URL url = new URL(OPENROUTER_API_URL);
+        URL url = new URL(openRouterApiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", "Bearer " + OPENROUTER_API_KEY);
+        connection.setRequestProperty("Authorization", "Bearer " + openRouterApiKey);
         connection.setDoOutput(true);
         
         try (OutputStream os = connection.getOutputStream()) {
@@ -347,4 +355,4 @@ public class AIChatService {
             return "error when parsing AI reply: " + e.getMessage();
         }
     }
-} 
+}
