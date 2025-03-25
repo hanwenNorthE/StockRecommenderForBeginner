@@ -239,7 +239,7 @@
             );
         };
         
-        // chat box component
+        // chat box component (from hello.jsp)
         const ChatBox = () => {
             const [isOpen, setIsOpen] = React.useState(false);
             const [messages, setMessages] = React.useState([]);
@@ -247,9 +247,10 @@
             const [isLoading, setIsLoading] = React.useState(false);
             const [sessionId, setSessionId] = React.useState('session_' + Math.random().toString(36).substring(2, 15));
             const [chatSize, setChatSize] = React.useState({ width: 500, height: 400 });
+            const [selectedApi, setSelectedApi] = React.useState('lmstudio');
             const chatRef = React.useRef(null);
             
-            // handle markdown format
+            // handle markdown format function
             const formatMarkdown = (text) => {
                 if (!text) return '';
                 
@@ -307,7 +308,7 @@
                             // check if the next line is a separator line (| --- | --- |)
                             if (!headerProcessed && i + 1 < lines.length && lines[i + 1].includes('-')) {
                                 headerProcessed = true;
-                                i++; // skip the separator line
+                                i++; // skip separator line
                             }
                         } else if (inTable) {
                             inTable = false;
@@ -362,11 +363,13 @@
                     // show loading status
                     setIsLoading(true);
                     
-                    // call backend AI chat API
-                    const url = contextPath + "/api/chat?sessionId=" + encodeURIComponent(sessionId) + "&message=" + encodeURIComponent(input.trim());
+                    // call backend AI chat API based on selected API
+                    const apiUrl = selectedApi === 'openrouter' 
+                        ? contextPath + "/api/chat/openrouter?sessionId=" + encodeURIComponent(sessionId) + "&message=" + encodeURIComponent(input.trim())
+                        : contextPath + "/api/chat?sessionId=" + encodeURIComponent(sessionId) + "&message=" + encodeURIComponent(input.trim());
                     
                     // send request
-                    fetch(url, {
+                    fetch(apiUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -374,7 +377,7 @@
                     })
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error('Network response error');
+                            throw new Error('network response error');
                         }
                         return response.json();
                     })
@@ -382,14 +385,16 @@
                         // add AI reply to chat history
                         setMessages(prev => [...prev, { 
                             text: data.message, 
-                            sender: 'system' 
+                            sender: 'system',
+                            api: selectedApi // Store which API was used
                         }]);
                     })
                     .catch(error => {
-                        console.error('Error calling AI chat API:', error);
+                        console.error('error when calling AI chat API:', error);
                         setMessages(prev => [...prev, { 
-                            text: "Sorry, there was an issue connecting to the AI assistant. Please try again later.", 
-                            sender: 'system' 
+                            text: "sorry, there is an error when calling AI chat API. please try again later.", 
+                            sender: 'system',
+                            api: selectedApi
                         }]);
                     })
                     .finally(() => {
@@ -408,6 +413,7 @@
             
             return (
                 <>
+                    {/* chat button */}
                     <button 
                         onClick={() => setIsOpen(!isOpen)}
                         className="fixed bottom-4 right-4 bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 z-50"
@@ -417,6 +423,7 @@
                         </svg>
                     </button>
                     
+                    {/* chat window */}
                     {isOpen && (
                         <div 
                             ref={chatRef}
@@ -427,9 +434,17 @@
                             }}
                         >
                             <div className="p-4 bg-indigo-600 text-white rounded-t-lg flex justify-between items-center">
-                                <h3 className="font-bold">AI Stock Assistant</h3>
+                                <h3 className="font-bold">AI Investment assistant</h3>
                                 <div className="flex items-center">
-                                    <span className="text-xs text-gray-200 mr-2">Drag to resize</span>
+                                    <select 
+                                        value={selectedApi}
+                                        onChange={(e) => setSelectedApi(e.target.value)}
+                                        className="mr-2 text-xs bg-indigo-700 text-white px-1 py-1 rounded border border-indigo-500"
+                                    >
+                                        <option value="lmstudio">LM Studio</option>
+                                        <option value="openrouter">OpenRouter</option>
+                                    </select>
+                                    <span className="text-xs text-gray-200 mr-2">drag to resize</span>
                                     <button onClick={() => setIsOpen(false)} className="text-white">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -442,10 +457,11 @@
                                 <div className="p-4">
                                     {messages.length === 0 ? (
                                         <div className="text-center text-gray-500 py-8">
-                                            <p>Hello, {USER_DATA.firstName}! I am AI stock assistant, you can ask me about your holdings or other investment questions, for example:</p>
-                                            <p className="mt-2 text-indigo-600">- Analyze my holdings</p>
-                                            <p className="text-indigo-600">- Is NVDA a good investment choice?</p>
-                                            <p className="text-indigo-600">- How to optimize my investment portfolio</p>
+                                            <p>Hi! I am AI Investment assistant, You can ask me any questions, like：</p>
+                                            <p className="mt-2 text-indigo-600">- How is AAPL historical performance？</p>
+                                            <p className="text-indigo-600">- Is NVDA a good investment？</p>
+                                            <p className="text-indigo-600">- Analyze AMZN stock</p>
+                                            <p className="mt-3 text-gray-600 text-sm">Select your preferred AI model from the dropdown menu in the top-right corner.</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
@@ -461,8 +477,15 @@
                                                                 {msg.text}
                                                             </div>
                                                         ) : (
-                                                            <div className={msgStyle} 
-                                                                dangerouslySetInnerHTML={{__html: formatMarkdown(msg.text)}}>
+                                                            <div className="flex flex-col">
+                                                                {msg.api && (
+                                                                    <span className="text-xs text-gray-500 mb-1 ml-1">
+                                                                        {msg.api === 'lmstudio' ? 'LM Studio' : 'OpenRouter'}
+                                                                    </span>
+                                                                )}
+                                                                <div className={msgStyle} 
+                                                                    dangerouslySetInnerHTML={{__html: formatMarkdown(msg.text)}}>
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
@@ -487,11 +510,11 @@
                             
                             <div className="p-4 border-t absolute bottom-0 w-full bg-white">
                                 <div className="flex">
-                                    <textarea
+                                    <textarea 
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
                                         onKeyDown={handleKeyDown}
-                                        placeholder="Please enter your question..."
+                                        placeholder="please enter your question..."
                                         className="flex-1 px-3 py-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
                                         rows="2"
                                     />
@@ -500,7 +523,7 @@
                                         disabled={isLoading}
                                         className={`${isLoading ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-4 py-2 rounded-r-lg`}
                                     >
-                                        {isLoading ? 'Sending...' : 'Send'}
+                                        {isLoading ? 'sending...' : 'send'}
                                     </button>
                                 </div>
                             </div>

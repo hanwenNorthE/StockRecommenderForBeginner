@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class AIChatService {
     
     private static final String LM_STUDIO_API_URL = "http://localhost:1234/v1/chat/completions";
+    private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+    private static final String OPENROUTER_API_KEY = "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"; //temporary key hardcoded
     private static final String DATA_FOLDER_PATH = "src/main/resources/data/";
     
     // 存储会话历史记录
@@ -62,6 +64,47 @@ public class AIChatService {
             
             // 发送请求到LM Studio
             String response = sendRequestToLMStudio(requestJson);
+            
+            // 解析响应
+            String aiReply = parseResponse(response);
+            
+            // 更新会话历史
+            history.append("assistant: ").append(aiReply).append("\n");
+            
+            // 返回消息对象
+            return new AIChatMessage("assistant", aiReply, new Date());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new AIChatMessage("assistant", "sorry, there was an error processing your request. error: " + e.getMessage(), new Date());
+        }
+    }
+    
+    // 使用OpenRouter API处理AI聊天消息
+    public AIChatMessage sendMessageWithOpenRouter(String sessionId, String message) {
+        System.out.println("Received message for OpenRouter in session " + sessionId + ": " + message);
+        
+        try {
+            // 获取会话历史或创建新的
+            StringBuilder history = sessionHistory.computeIfAbsent(sessionId + "_openrouter", k -> new StringBuilder());
+            
+            // 检查消息是否包含股票相关查询
+            String stockCode = extractStockCode(message);
+            
+            
+            // 构建系统提示
+            String systemPrompt = "This is an educational project. You are a professional stock investment advisor, use English to answer user questions." +
+                "if the user asks about a specific stock, please analyze the performance of the stock based on historical data and provide investment advice.";
+            
+            
+            // 更新会话历史
+            history.append("user: ").append(message).append("\n");
+            
+            // 构建请求JSON
+            String requestJson = buildOpenRouterRequestJson(systemPrompt, history.toString());
+            
+            // 发送请求到OpenRouter
+            String response = sendRequestToOpenRouter(requestJson);
             
             // 解析响应
             String aiReply = parseResponse(response);
@@ -189,6 +232,36 @@ public class AIChatService {
         }
     }
     
+    // 构建发送到OpenRouter的请求JSON
+    private String buildOpenRouterRequestJson(String systemPrompt, String conversation) {
+        try {
+            Map<String, Object> message1 = new HashMap<>();
+            message1.put("role", "system");
+            message1.put("content", systemPrompt);
+            
+            Map<String, Object> message2 = new HashMap<>();
+            message2.put("role", "user");
+            message2.put("content", conversation);
+            
+            Map<String, Object> requestData = new HashMap<>();
+            requestData.put("messages", new Object[]{message1, message2});
+            requestData.put("model", "deepseek/deepseek-chat-v3-0324:free");  // OpenRouter模型标识符
+            requestData.put("temperature", 0.7);
+            requestData.put("max_tokens", 1000);
+
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("App-Name", "5200 Stock Recommendation System"); 
+            requestData.put("headers", headers);
+
+            
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(requestData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{}";
+        }
+    }
+    
     // 发送请求到LM Studio
     private String sendRequestToLMStudio(String jsonInput) throws IOException {
         URL url = new URL(LM_STUDIO_API_URL);
@@ -207,6 +280,45 @@ public class AIChatService {
             while (scanner.hasNextLine()) {
                 response.append(scanner.nextLine());
             }
+        }
+        
+        return response.toString();
+    }
+    
+    // 发送请求到OpenRouter
+    private String sendRequestToOpenRouter(String jsonInput) throws IOException {
+        URL url = new URL(OPENROUTER_API_URL);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Authorization", "Bearer " + OPENROUTER_API_KEY);
+        connection.setDoOutput(true);
+        
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = jsonInput.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
+        
+        StringBuilder response = new StringBuilder();
+        
+        // Check if there is an error response
+        try {
+            try (Scanner scanner = new Scanner(connection.getInputStream(), StandardCharsets.UTF_8.name())) {
+                while (scanner.hasNextLine()) {
+                    response.append(scanner.nextLine());
+                }
+            }
+        } catch (IOException e) {
+            // Handle error response
+            if (connection.getErrorStream() != null) {
+                try (Scanner scanner = new Scanner(connection.getErrorStream(), StandardCharsets.UTF_8.name())) {
+                    while (scanner.hasNextLine()) {
+                        response.append(scanner.nextLine());
+                    }
+                }
+                System.out.println("Error response from OpenRouter: " + response.toString());
+            }
+            throw e; // Still throw to handle in the calling method
         }
         
         return response.toString();
