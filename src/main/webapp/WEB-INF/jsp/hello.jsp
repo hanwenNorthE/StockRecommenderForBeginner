@@ -8,6 +8,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Stock Recommendation System</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/images/favicon.png">
+    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- React needed scripts -->
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>

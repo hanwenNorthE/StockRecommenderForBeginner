@@ -7,6 +7,9 @@
 <head>
     <meta charset="UTF-8">
     <title>${stock.companyName} - Stock Details</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/images/favicon.png">
+    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.ico">
     <!-- use stock.code as a JavaScript variable -->
     <script>
         // directly get stock code from JSP
