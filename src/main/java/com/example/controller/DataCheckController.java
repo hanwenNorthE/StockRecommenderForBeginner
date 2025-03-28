@@ -42,6 +42,7 @@ public class DataCheckController {
         model.addAttribute("preferencesCount", counts.get("user_preferences"));
         model.addAttribute("industriesCount", counts.get("user_industries"));
         model.addAttribute("favoritesCount", counts.get("user_favorites"));
+        model.addAttribute("newsCount", counts.get("stock_news"));
         
         return "dataCheckPage";
     }
@@ -74,6 +75,7 @@ public class DataCheckController {
         model.addAttribute("preferencesCount", counts.get("user_preferences"));
         model.addAttribute("industriesCount", counts.get("user_industries"));
         model.addAttribute("favoritesCount", counts.get("user_favorites"));
+        model.addAttribute("newsCount", counts.get("stock_news"));
         
         // 获取表数据
         List<String> columns = dataCheckService.getTableColumns(tableName);

@@ -17,7 +17,7 @@ public class DataCheckService {
     // 表名列表，用于安全检查
     private static final List<String> ALLOWED_TABLES = Arrays.asList(
             "stock_details", "price_data", "stocks", "users", "portfolios", 
-            "user_preferences", "user_industries", "user_favorites"
+            "user_preferences", "user_industries", "user_favorites", "stock_news"
     );
 
     @Autowired

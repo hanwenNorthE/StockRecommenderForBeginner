@@ -39,6 +39,12 @@
             background-color: #f5f7fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        .news-item {
+            transition: transform 0.2s;
+        }
+        .news-item:hover {
+            transform: translateY(-3px);
+        }
     </style>
 </head>
 <body>
@@ -61,6 +67,7 @@
             <div class="news-item" 
                  data-title="${item.title}" 
                  data-url="${item.url}" 
+                 data-summary="${item.summary}"
                  data-publish-date="${item.publishDate}">
             </div>
         </c:forEach>
@@ -105,6 +112,7 @@
             NEWS_DATA.push({
                 title: element.getAttribute('data-title'),
                 url: element.getAttribute('data-url'),
+                summary: element.getAttribute('data-summary'),
                 publishDate: element.getAttribute('data-publish-date')
             });
         });
@@ -211,7 +219,7 @@
                                     </p>
                                     <p className="flex justify-between">
                                         <span className="text-gray-600 font-medium">Price Change:</span>
-                                        <span className={`px-3 py-1 rounded-full ${priceChangeClass}`}>
+                                        <span className={`px-3 py-1 rounded-full \${priceChangeClass}`}>
                                             {stock.priceChange >= 0 ? '+' : ''}{stock.priceChange}%
                                         </span>
                                     </p>
@@ -386,7 +394,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return `$${context.parsed.y.toFixed(2)}`;
+                                        return `\$${context.parsed.y.toFixed(2)}`;
                                     }
                                 }
                             }
@@ -404,33 +412,33 @@
                                 <button 
                                     type="button" 
                                     onClick={() => fetchStockData(stockCode, 'daily')}
-                                    className={`px-4 py-2 text-sm font-medium rounded-l-lg \${
-                                        activeTimeframe === 'daily' 
-                                            ? 'bg-indigo-600 text-white' 
-                                            : 'bg-white text-gray-700 hover:bg-gray-50'
-                                    } border border-gray-300`}
+                                    className="px-4 py-2 text-sm font-medium rounded-l-lg border border-gray-300"
+                                    style={{
+                                        backgroundColor: activeTimeframe === 'daily' ? '#4f46e5' : 'white',
+                                        color: activeTimeframe === 'daily' ? 'white' : '#374151'
+                                    }}
                                 >
                                     Daily
                                 </button>
                                 <button 
                                     type="button" 
                                     onClick={() => fetchStockData(stockCode, 'weekly')}
-                                    className={`px-4 py-2 text-sm font-medium \${
-                                        activeTimeframe === 'weekly' 
-                                            ? 'bg-indigo-600 text-white' 
-                                            : 'bg-white text-gray-700 hover:bg-gray-50'
-                                    } border-t border-b border-gray-300`}
+                                    className="px-4 py-2 text-sm font-medium border-t border-b border-gray-300"
+                                    style={{
+                                        backgroundColor: activeTimeframe === 'weekly' ? '#4f46e5' : 'white',
+                                        color: activeTimeframe === 'weekly' ? 'white' : '#374151'
+                                    }}
                                 >
                                     Weekly
                                 </button>
                                 <button 
                                     type="button" 
                                     onClick={() => fetchStockData(stockCode, 'monthly')}
-                                    className={`px-4 py-2 text-sm font-medium rounded-r-lg \${
-                                        activeTimeframe === 'monthly' 
-                                            ? 'bg-indigo-600 text-white' 
-                                            : 'bg-white text-gray-700 hover:bg-gray-50'
-                                    } border border-gray-300`}
+                                    className="px-4 py-2 text-sm font-medium rounded-r-lg border border-gray-300"
+                                    style={{
+                                        backgroundColor: activeTimeframe === 'monthly' ? '#4f46e5' : 'white',
+                                        color: activeTimeframe === 'monthly' ? 'white' : '#374151'
+                                    }}
                                 >
                                     Monthly
                                 </button>
@@ -449,32 +457,68 @@
             );
         };
         
-        // News component
-        const NewsSection = ({ news }) => {
-            return (
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-4">
-                        <h3 className="text-xl font-semibold text-white">Related News</h3>
+        // News Section component
+        const NewsSection = ({ newsItems, loading, fetchNews }) => {
+            if (!newsItems || newsItems.length === 0) {
+                return (
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+                        <div className="bg-gradient-to-r from-indigo-600 to-blue-500 px-6 py-4">
+                            <h3 className="text-xl font-bold text-white">Latest News</h3>
+                        </div>
+                        <div className="p-6">
+                            <div className="text-gray-600 text-center py-8">
+                                <p>No news articles available for this stock.</p>
+                                <button 
+                                    onClick={fetchNews}
+                                    className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                                    disabled={loading}
+                                >
+                                    {loading ? "Loading..." : "Load News"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="p-4">
-                        {news.length === 0 ? (
-                            <p className="text-gray-500 text-center py-4">No related news</p>
-                        ) : (
-                            <ul className="divide-y divide-gray-200">
-                                {news.map((item, index) => (
-                                    <li key={index} className="py-4">
-                                        <a 
-                                            href={item.url} 
-                                            target="_blank" 
-                                            className="block hover:bg-gray-50 p-2 rounded transition"
-                                        >
-                                            <h4 className="text-indigo-600 font-medium hover:text-indigo-800 mb-1">{item.title}</h4>
-                                            <span className="text-sm text-gray-500">{item.publishDate}</span>
+                );
+            }
+            
+            const formatDate = (dateString) => {
+                if (!dateString) return '';
+                
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric'
+                    });
+                } catch (e) {
+                    return dateString;
+                }
+            };
+            
+            return (
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+                    <div className="bg-gradient-to-r from-indigo-600 to-blue-500 px-6 py-4">
+                        <h3 className="text-xl font-bold text-white">Latest News</h3>
+                    </div>
+                    <div className="p-6">
+                        <div className="h-96 overflow-y-auto pr-2" style={{ maxHeight: '400px' }}>
+                            <div className="space-y-4">
+                                {newsItems.map((item, index) => (
+                                    <div key={index} className="news-item bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md">
+                                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="block">
+                                            <h4 className="text-lg font-semibold text-indigo-700 mb-2">{item.title}</h4>
+                                            {item.summary && (
+                                                <p className="text-gray-600 mb-2 line-clamp-2">{item.summary}</p>
+                                            )}
+                                            <div className="text-sm text-gray-500">
+                                                {formatDate(item.publishDate)}
+                                            </div>
                                         </a>
-                                    </li>
+                                    </div>
                                 ))}
-                            </ul>
-                        )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             );
@@ -512,9 +556,62 @@
             );
         };
         
-        // Main Detail Page
+        // Main Stock Detail Page Component
         const StockDetailPage = () => {
-            // Log the stock code being passed to components
+            const [newsItems, setNewsItems] = React.useState([]);
+            const [loading, setLoading] = React.useState(false);
+            
+            // Function to fetch news
+            const fetchNewsForStock = async () => {
+                setLoading(true);
+                try {
+                    const stockCode = STOCK_DATA.code;
+                    if (!stockCode) {
+                        console.error("Cannot fetch news: stock code is empty");
+                        return;
+                    }
+                    
+                    // Build the URL and log it for debugging
+                    const apiUrl = `${contextPath}/api/news/stock/\${stockCode}`;
+                    console.log("Fetching news with URL:", apiUrl);
+                    
+                    const response = await fetch(apiUrl);
+                    console.log("Response status:", response.status);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        setNewsItems(data);
+                        console.log("Fetched news:", data);
+                    } else {
+                        console.error("Failed to fetch news:", response.statusText);
+                    }
+                } catch (error) {
+                    console.error("Error fetching news:", error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            // Initialize with news data from JSP or fetch if empty
+            React.useEffect(() => {
+                // First try to get news from the DOM
+                const newsElements = document.querySelectorAll('#news-data .news-item');
+                const newsFromDOM = Array.from(newsElements).map(element => ({
+                    title: element.getAttribute('data-title'),
+                    url: element.getAttribute('data-url'),
+                    summary: element.getAttribute('data-summary'),
+                    publishDate: element.getAttribute('data-publish-date')
+                }));
+                
+                if (newsFromDOM.length > 0) {
+                    setNewsItems(newsFromDOM);
+                    console.log("Loaded news from DOM:", newsFromDOM);
+                }
+                
+                // Debug the stock code to make sure it's available
+                console.log("Stock code for news:", STOCK_DATA.code);
+            }, []);
+            
             console.log("Rendering StockDetailPage with stock code:", STOCK_DATA.code);
             
             return (
@@ -531,7 +628,11 @@
                             </div>
                             
                             <div className="lg:col-span-1">
-                                <NewsSection news={NEWS_DATA} />
+                                <NewsSection 
+                                    newsItems={newsItems} 
+                                    loading={loading}
+                                    fetchNews={fetchNewsForStock}
+                                />
                                 <div className="mt-6">
                                     <ChatBox />
                                 </div>
@@ -544,7 +645,6 @@
             );
         };
         
-        // Render the page
         ReactDOM.render(<StockDetailPage />, document.getElementById('stock-detail-root'));
     </script>
 </body>

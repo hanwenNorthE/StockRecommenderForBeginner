@@ -78,6 +78,12 @@
                         </span>
                      </li>
                      <li class="list-group-item d-flex justify-content-between align-items-center">
+                        stock news data
+                        <span class="badge bg-primary rounded-pill" id="newsCount">
+                           <c:out value="${newsCount}" default="not loaded"/>
+                        </span>
+                     </li>
+                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         user data
                         <span class="badge bg-primary rounded-pill" id="usersCount">
                            <c:out value="${usersCount}" default="not loaded"/>
@@ -129,6 +135,7 @@
                            <option value="stock_details">stock details (stock_details)</option>
                            <option value="price_data">stock price data (price_data)</option>
                            <option value="stocks">stock basic information (stocks)</option>
+                           <option value="stock_news">stock news data (stock_news)</option>
                            <option value="users">user (users)</option>
                            <option value="portfolios">portfolio (portfolios)</option>
                            <option value="user_preferences">user preference (user_preferences)</option>
