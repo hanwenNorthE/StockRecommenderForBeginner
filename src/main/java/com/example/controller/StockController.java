@@ -29,9 +29,7 @@ public class StockController {
     private final StockService stockService;
     private final NewsService newsService;
     private final RestTemplate restTemplate;
-    
-    @Value("${alphavantage.api.key}")
-    private String alphaVantageApiKey;
+
     
     @Autowired
     public StockController(StockService stockService, NewsService newsService) {
@@ -172,47 +170,6 @@ public class StockController {
             errorResult.put("error", "Server error: " + e.getMessage());
             
             return ResponseEntity.status(500).body(errorResult);
-        }
-    }
-    
-    /**
-     * Test endpoint to directly call Alpha Vantage API
-     * For debugging purposes only
-     */
-    @GetMapping("/api/test-alphavantage")
-    @ResponseBody
-    public ResponseEntity<Object> testAlphaVantage(
-            @RequestParam(defaultValue = "IBM") String symbol,
-            @RequestParam(defaultValue = "TIME_SERIES_DAILY") String function,
-            @RequestParam(defaultValue = "compact") String outputsize) {
-        
-        try {
-            // Sanitize the symbol parameter
-            symbol = symbol.trim().toUpperCase();
-            
-            // Build the API URL with all required parameters
-            String apiUrl = String.format(
-                "https://www.alphavantage.co/query?function=%s&symbol=%s&outputsize=%s&apikey=%s",
-                function, symbol, outputsize, alphaVantageApiKey
-            );
-            
-            System.out.println("Test calling Alpha Vantage API: " + apiUrl);
-            
-            // Make the direct API call
-            Object response = restTemplate.getForObject(apiUrl, Object.class);
-            
-            // Additional log of response if available
-            if (response instanceof Map) {
-                System.out.println("Response keys: " + ((Map<?, ?>)response).keySet());
-            }
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Error calling Alpha Vantage API: " + e.getMessage());
-            System.out.println(error.get("error"));
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(error);
         }
     }
     

@@ -23,8 +23,11 @@ public class StockService {
     private final StockDetailDao stockDetailDao;
     private final RestTemplate restTemplate;
     
-    @Value("${alphavantage.api.key}")
-    private String alphaVantageApiKey;
+    @Value("${polygon.api.key}")
+    private String polygonApiKey;
+    
+    @Value("${polygon.api.baseurl}")
+    private String polygonBaseUrl;
     
     @Autowired
     public StockService(StockDao stockDao, StockDetailDao stockDetailDao) {
@@ -82,7 +85,7 @@ public class StockService {
     }
     
     /**
-     * Get stock time series data from Alpha Vantage API
+     * Get stock time series data from Polygon.io API
      * @param stockCode the stock code/symbol
      * @param timeframe the timeframe (daily, weekly, monthly)
      * @return a map containing time series data
@@ -95,79 +98,121 @@ public class StockService {
             return createErrorResponse("Invalid stock symbol: " + stockCode);
         }
         
-        // 确保股票代码格式化为大写并移除空格
+        // Ensure stock code is formatted as uppercase and remove spaces
         sanitizedStockCode = sanitizedStockCode.trim().toUpperCase();
         System.out.println("Processing stock symbol: " + sanitizedStockCode);
         
-        String function;
-        StringBuilder urlBuilder = new StringBuilder("https://www.alphavantage.co/query?");
+        StringBuilder urlBuilder = new StringBuilder(polygonBaseUrl);
         
-        // Determine the correct API function based on timeframe
+        // Determine the correct API endpoint based on timeframe
+        String multiplier = "1";
+        String timespan;
+        int limit = 100;  // Default limit for results
+        
         switch (timeframe) {
             case "daily":
-                function = "TIME_SERIES_DAILY";
-                urlBuilder.append(String.format("function=%s&symbol=%s&outputsize=compact", function, sanitizedStockCode));
+                timespan = "day";
                 break;
             case "weekly":
-                function = "TIME_SERIES_WEEKLY";
-                urlBuilder.append(String.format("function=%s&symbol=%s", function, sanitizedStockCode));
+                timespan = "week";
                 break;
             case "monthly":
-                function = "TIME_SERIES_MONTHLY";
-                urlBuilder.append(String.format("function=%s&symbol=%s", function, sanitizedStockCode));
+                timespan = "month";
                 break;
             default:
-                function = "TIME_SERIES_DAILY";
-                urlBuilder.append(String.format("function=%s&symbol=%s&outputsize=compact", function, sanitizedStockCode));
+                timespan = "day";
         }
         
+        // Calculating from and to dates for recent data
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate startDate;
+        
+        // Adjust range based on timeframe
+        if ("daily".equals(timeframe)) {
+            startDate = today.minusMonths(3); // 3 months of daily data
+        } else if ("weekly".equals(timeframe)) {
+            startDate = today.minusMonths(6); // 6 months of weekly data
+        } else {
+            startDate = today.minusYears(1);  // 1 year of monthly data
+        }
+        
+        String fromDate = startDate.toString();
+        String toDate = today.toString();
+        
+        System.out.println("Date range: " + fromDate + " to " + toDate);
+        
+        // For Polygon API, we need to add the ticker prefix for stocks
+        String tickerSymbol = sanitizedStockCode;
+        if (!tickerSymbol.startsWith("$")) {
+            tickerSymbol = tickerSymbol;
+        }
+        
+        urlBuilder.append("/v2/aggs/ticker/")
+                .append(tickerSymbol)
+                .append("/range/")
+                .append(multiplier)
+                .append("/")
+                .append(timespan)
+                .append("/")
+                .append(fromDate)
+                .append("/")
+                .append(toDate);
+        
+        // Add query parameters
+        urlBuilder.append("?adjusted=true&sort=asc&limit=").append(limit);
+        
         // Add API key
-        urlBuilder.append("&apikey=").append(alphaVantageApiKey);
+        urlBuilder.append("&apiKey=").append(polygonApiKey);
         
         String apiUrl = urlBuilder.toString();
-        System.out.println("Making Alpha Vantage API request: " + apiUrl);
+        System.out.println("Making Polygon.io API request: " + apiUrl);
         
         try {
             // Make the API request
+            System.out.println("Full API URL: " + apiUrl);
             Map<String, Object> response = restTemplate.getForObject(apiUrl, Map.class);
             
             if (response != null) {
                 // Print response keys for debugging
                 System.out.println("API Response keys: " + response.keySet());
+                System.out.println("Full API Response: " + response);
                 
-                // Check for error messages
-                if (response.containsKey("Error Message")) {
-                    System.out.println("Alpha Vantage API error: " + response.get("Error Message"));
-                    return createErrorResponse("API error: " + response.get("Error Message"));
+                // Check for error messages from Polygon.io
+                if (response.containsKey("error")) {
+                    String errorMessage = response.get("error").toString();
+                    System.out.println("Polygon.io API error: " + errorMessage);
+                    return createErrorResponse("API error: " + errorMessage);
                 }
                 
-                // Check for note (usually indicates API call limit reached)
-                if (response.containsKey("Note")) {
-                    System.out.println("Alpha Vantage API limit reached: " + response.get("Note"));
-                    return createErrorResponse("API limit reached. Please try again later.");
+                // Check status (Polygon.io uses "OK" for successful responses or "DELAYED" for delayed data)
+                if (response.containsKey("status") && 
+                    !("OK".equals(response.get("status")) || "DELAYED".equals(response.get("status")))) {
+                    System.out.println("Polygon.io API returned invalid status: " + response.get("status"));
+                    return createErrorResponse("API returned invalid status: " + response.get("status"));
                 }
                 
-                // Check if we got information message
-                if (response.containsKey("Information")) {
-                    System.out.println("Alpha Vantage Information: " + response.get("Information"));
-                    return createErrorResponse("API Information: " + response.get("Information"));
+                // If status is missing, that's also an error
+                if (!response.containsKey("status")) {
+                    System.out.println("Polygon.io API response missing status field");
+                    System.out.println("Full response: " + response);
+                    return createErrorResponse("API response missing status field");
                 }
                 
                 // Process and return the data
-                return processTimeSeriesData(response, timeframe);
+                return processPolygonData(response, timeframe);
             } else {
-                System.out.println("No response received from Alpha Vantage API");
+                System.out.println("No response received from Polygon.io API");
                 return createErrorResponse("No data received from API");
             }
         } catch (Exception e) {
-            System.out.println("Exception when calling Alpha Vantage API: " + e.getMessage());
+            System.out.println("Exception when calling Polygon.io API: " + e.getMessage());
             e.printStackTrace();
             return createErrorResponse("Error fetching stock data: " + e.getMessage());
         }
     }
     
     /**
-     * Sanitize stock symbol to ensure it's valid for Alpha Vantage API
+     * Sanitize stock symbol to ensure it's valid for Polygon.io API
      * @param symbol Raw stock symbol
      * @return Sanitized stock symbol
      */
@@ -186,15 +231,94 @@ public class StockService {
     }
     
     /**
-     * Process the raw time series data from Alpha Vantage API
+     * Process the raw data from Polygon.io API
      * @param apiResponse the raw API response
      * @param timeframe the timeframe (daily, weekly, monthly)
      * @return a processed map containing time series data
      */
-    private Map<String, Object> processTimeSeriesData(Map<String, Object> apiResponse, String timeframe) {
+    private Map<String, Object> processPolygonData(Map<String, Object> apiResponse, String timeframe) {
         Map<String, Object> result = new HashMap<>();
         
-        // Determine the time series key based on timeframe
+        // Check if the results data exists
+        if (!apiResponse.containsKey("results")) {
+            System.out.println("Results key not found. Available keys: " + apiResponse.keySet());
+            return createErrorResponse("No data found in the API response");
+        }
+        
+        // Extract metadata
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("1. Information", "Daily Prices from Polygon.io");
+        metadata.put("2. Symbol", apiResponse.get("ticker"));
+        metadata.put("3. Last Refreshed", new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
+        metadata.put("4. Output Size", "Compact");
+        metadata.put("5. Time Zone", "US/Eastern");
+        
+        // Convert Polygon's array format to Alpha Vantage's date-keyed map format
+        List<Map<String, Object>> polygonResults = (List<Map<String, Object>>) apiResponse.get("results");
+        Map<String, Map<String, String>> timeSeriesData = new HashMap<>();
+        
+        if (polygonResults != null) {
+            for (Map<String, Object> bar : polygonResults) {
+                try {
+                    // Get timestamp and log the raw value
+                    Object rawTimestamp = bar.get("t");
+                    System.out.println("Raw timestamp type: " + (rawTimestamp != null ? rawTimestamp.getClass().getName() : "null"));
+                    System.out.println("Raw timestamp value: " + rawTimestamp);
+                    
+                    // Convert to milliseconds
+                    long timestamp;
+                    
+                    if (rawTimestamp instanceof Number) {
+                        timestamp = ((Number) rawTimestamp).longValue();
+                        
+                        // Check if the timestamp might be in seconds instead of milliseconds
+                        // If timestamp is before 2000 when converted as milliseconds, it's likely in seconds
+                        java.util.Date testDate = new java.util.Date(timestamp);
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        cal.setTime(testDate);
+                        int year = cal.get(java.util.Calendar.YEAR);
+                        
+                        System.out.println("Initial timestamp interpretation: " + testDate + " (year: " + year + ")");
+                        
+                        // If year is after 2100, it's clearly wrong - adjust by dividing
+                        if (year > 2100) {
+                            timestamp = timestamp / 1000;
+                            System.out.println("Timestamp adjusted by dividing by 1000: " + timestamp);
+                        }
+                        // If year is before 2000, it might be in seconds - adjust by multiplying
+                        else if (year < 2000) {
+                            timestamp = timestamp * 1000;
+                            System.out.println("Timestamp adjusted by multiplying by 1000: " + timestamp);
+                        }
+                    } else {
+                        // Default to current time if we can't parse the timestamp
+                        System.out.println("WARNING: Could not parse timestamp: " + rawTimestamp);
+                        timestamp = System.currentTimeMillis();
+                    }
+                    
+                    // Convert to date string in YYYY-MM-DD format
+                    java.util.Date date = new java.util.Date(timestamp);
+                    String dateStr = new java.text.SimpleDateFormat("yyyy-MM-dd").format(date);
+                    System.out.println("Final converted date: " + dateStr);
+                    
+                    // Create data point with Alpha Vantage-like structure
+                    Map<String, String> dataPoint = new HashMap<>();
+                    dataPoint.put("1. open", String.valueOf(bar.get("o")));
+                    dataPoint.put("2. high", String.valueOf(bar.get("h")));
+                    dataPoint.put("3. low", String.valueOf(bar.get("l")));
+                    dataPoint.put("4. close", String.valueOf(bar.get("c")));
+                    dataPoint.put("5. volume", String.valueOf(bar.get("v")));
+                    
+                    // Add to the map
+                    timeSeriesData.put(dateStr, dataPoint);
+                } catch (Exception e) {
+                    System.out.println("Error processing data point: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        // Determine correct time series key based on the timeframe
         String timeSeriesKey;
         switch (timeframe) {
             case "daily":
@@ -210,21 +334,11 @@ public class StockService {
                 timeSeriesKey = "Time Series (Daily)";
         }
         
-        System.out.println("Looking for time series key: " + timeSeriesKey);
-        
-        // Check if the time series data exists
-        if (!apiResponse.containsKey(timeSeriesKey)) {
-            System.out.println("Time series key not found. Available keys: " + apiResponse.keySet());
-            // If we received an Information message, it's likely API limit reached
-            if (apiResponse.containsKey("Information")) {
-                return createErrorResponse("API limit reached: " + apiResponse.get("Information"));
-            }
-            return createErrorResponse("No time series data found in the API response");
-        }
-        
-        // Extract metadata and time series data
-        result.put("metadata", apiResponse.get("Meta Data"));
-        result.put("timeSeries", apiResponse.get(timeSeriesKey));
+        // Structure the response like Alpha Vantage for compatibility
+        result.put("metadata", metadata);
+        result.put("timeSeries", timeSeriesData);
+        result.put(timeSeriesKey, timeSeriesData); // Add with the original key format
+        result.put("Meta Data", metadata); // Add with the original key format
         result.put("success", true);
         
         return result;
