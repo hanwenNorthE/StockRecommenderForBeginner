@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  java-app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - KNOWLEDGE_BASE_URL=http://python-app:5000
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/stockrecommender?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=YOUR_DATABASE_PASSWORD
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      python-app:
+        condition: service_started
+    volumes:
+      # 挂载JSP文件，便于前端开发
+      - ./src/main/webapp:/app/src/main/webapp
+
+  python-app:
+    build: 
+      context: ./src/main/simple_pandaaiqa
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ALLOWED_ORIGINS=http://java-app:8080
+      - LM_STUDIO_API_BASE=http://host.docker.internal:1234
+    volumes:
+      # 挂载知识库数据
+      - ./src/main/simple_pandaaiqa/knowledgeBase:/app/simple_pandaaiqa/knowledgeBase
+      # 挂载Python代码，便于开发
+      - ./src/main/simple_pandaaiqa:/app/simple_pandaaiqa
+      # 挂载API文件
+      - ./src/main/simple_pandaaiqa/api.py:/app/api.py
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      
+  mysql-db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=YOUR_DATABASE_PASSWORD
+      - MYSQL_DATABASE=stockrecommender
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pYOUR_DATABASE_PASSWORD"]
+      interval: 120s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql-data: 

@@ -74,3 +74,9 @@ logs/
 *.db
 *.sqlite
 *.sqlite3 
+
+# Python缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
