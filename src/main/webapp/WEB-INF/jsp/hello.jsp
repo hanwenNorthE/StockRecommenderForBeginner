@@ -310,6 +310,7 @@
                     <HotStocks />
                     <Footer />
                     <ChatBox />
+                    <KnowledgeBaseButton />
                 </div>
             );
         };

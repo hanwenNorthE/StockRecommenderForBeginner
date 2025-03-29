@@ -249,6 +249,7 @@
                 <>
                     <UserProfile />
                     <ChatBox />
+                    <KnowledgeBaseButton />
                 </>
             );
         };

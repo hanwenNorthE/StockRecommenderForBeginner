@@ -641,6 +641,7 @@
                     </main>
                     
                     <Footer />
+                    <KnowledgeBaseButton />
                 </div>
             );
         };
