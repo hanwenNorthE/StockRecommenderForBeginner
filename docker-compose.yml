@@ -11,6 +11,9 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/stockrecommender?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=YOUR_DATABASE_PASSWORD
+      # 挂载共享知识库，重要
+      - KNOWLEDGE_BASE_PATH=/shared/knowledgeBase
+      - DOCKER_ENV=true
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -18,7 +21,9 @@ services:
         condition: service_started
     volumes:
       # 挂载JSP文件，便于前端开发
-      - ./src/main/webapp:/app/src/main/webapp
+      - ./src/main/webapp:/StockRecommenderForBeginner/src/main/webapp
+      # 挂载共享知识库
+      - knowledge-base-data:/shared/knowledgeBase
 
   python-app:
     build: 
@@ -29,17 +34,17 @@ services:
     environment:
       - ALLOWED_ORIGINS=http://java-app:8080
       - LM_STUDIO_API_BASE=http://host.docker.internal:1234
+      - KNOWLEDGE_BASE_PATH=/shared/knowledgeBase
     volumes:
-      # 挂载知识库数据
-      - ./src/main/simple_pandaaiqa/knowledgeBase:/app/simple_pandaaiqa/knowledgeBase
+      # 挂载共享知识库
+      - knowledge-base-data:/shared/knowledgeBase
       # 挂载Python代码，便于开发
       - ./src/main/simple_pandaaiqa:/app/simple_pandaaiqa
-      # 挂载API文件
-      - ./src/main/simple_pandaaiqa/api.py:/app/api.py
+      
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
-      interval: 30s
+      interval: 300s
       timeout: 10s
       retries: 3
       
@@ -61,4 +66,5 @@ services:
       retries: 5
 
 volumes:
-  mysql-data: 
+  mysql-data:
+  knowledge-base-data: 

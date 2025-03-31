@@ -240,7 +240,16 @@ public class StockController {
         }
         
         // create knowledgebase folder path
-        String knowledgebasePath = "src/main/simple_pandaaiqa/knowledgeBase";
+        String knowledgebasePath;
+        // 检查是否在Docker环境中运行
+        if (System.getenv("DOCKER_ENV") != null) {
+            // Docker环境使用挂载的路径
+            knowledgebasePath = "/shared/knowledgeBase";
+        } else {
+            // 本地环境使用项目目录下的shared文件夹
+            knowledgebasePath = System.getProperty("user.dir") + File.separator + "shared" + File.separator + "knowledgeBase";
+        }
+        
         File directory = new File(knowledgebasePath);
         if (!directory.exists()) {
             directory.mkdirs();

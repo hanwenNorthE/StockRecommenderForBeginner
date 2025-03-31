@@ -121,6 +121,13 @@
             color: var(--light-text);
         }
 
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
         button {
             background-color: var(--primary-color);
             color: white;
@@ -545,6 +552,7 @@
                     <button id="check-lm-button" class="small-button">Check Connection</button></span>
             </div>
             <button id="clear-button" class="clear-button">Clear Knowledge Base</button>
+            <button id="load-database-button" class="ml-2">Load from Knowledge Base</button>
         </div>
 
         <!-- Default role content - your existing cards -->
@@ -929,6 +937,10 @@
 
             // Clear button event handler
             clearButton.addEventListener('click', clearKnowledgeBase);
+            
+            // Load database button event handler
+            const loadDatabaseButton = document.getElementById('load-database-button');
+            loadDatabaseButton.addEventListener('click', loadFromKnowledgeBase);
 
             // Enter key to submit query
             queryInput.addEventListener('keyup', (e) => {
@@ -1103,6 +1115,33 @@
                     .catch(error => {
                         showMessage(uploadMessage, 'Clear error: ' + error.message, 'error');
                     });
+            }
+            
+            // Load from knowledge base
+            function loadFromKnowledgeBase() {
+                const loadButton = document.getElementById('load-database-button');
+                loadButton.disabled = true;
+                loadButton.textContent = 'Loading...';
+                
+                fetch('/api/load-from-database', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showMessage(uploadMessage, data.message, 'success');
+                    checkStatus();
+                })
+                .catch(error => {
+                    showMessage(uploadMessage, 'Error loading from knowledge base: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    loadButton.disabled = false;
+                    loadButton.textContent = 'Load from Knowledge Base';
+                });
             }
 
             // Show message helper

@@ -84,8 +84,16 @@ class LoadRequest(BaseModel):
     directory: str = Field(..., description="Directory to load the knowledge base from")
 
 
+class LoadKnowledgeBaseRequest(BaseModel):
+    """Request model for loading files from knowledgebase folder"""
+    folder_path: str = Field(
+        os.environ.get("KNOWLEDGE_BASE_PATH", "knowledgeBase"), 
+        description="Path to knowledgebase folder (default from env var or 'knowledgeBase')"
+    )
+
+
 # Create FastAPI application
-app = FastAPI(title="PandaAIQA", description="本地知识问答系统")
+app = FastAPI(title="PandaAIQA", description="local knowledge base")
 
 # Initialize components
 text_processor = TextProcessor()
@@ -388,6 +396,155 @@ async def load_knowledge_base(
     except Exception as e:
         logger.error(f"Error loading knowledge base: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@main_router.post("/load-from-database", response_model=MessageResponse)
+async def load_from_knowledgebase(
+    request: LoadKnowledgeBaseRequest = LoadKnowledgeBaseRequest(),
+    components: Dict[str, Any] = Depends(get_components)
+):
+    """Load all files from the knowledgebase folder"""
+    try:
+        # 检查环境变量中是否设置了知识库路径
+        env_kb_path = os.environ.get("KNOWLEDGE_BASE_PATH")
+        if env_kb_path and os.path.exists(env_kb_path):
+            kb_folder = env_kb_path
+            logger.info(f"使用环境变量指定的路径: {kb_folder}")
+        else:
+            # 首先尝试在当前目录下查找
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            kb_folder = os.path.join(base_dir, request.folder_path)
+            
+            # 如果找不到，尝试在容器路径下查找
+            if not os.path.exists(kb_folder):
+                # 尝试 Docker 容器内的路径
+                docker_paths = [
+                    # 共享存储路径
+                    "/shared/knowledgeBase",
+                    # StockRecommenderForBeginner 挂载路径 (docker-compose 挂载路径)
+                    "/StockRecommenderForBeginner/src/main/simple_pandaaiqa/knowledgeBase",
+                    # 应用根目录下
+                    "/app/simple_pandaaiqa/knowledgeBase",
+                    # 当前目录的上级目录
+                    os.path.join(os.path.dirname(base_dir), "knowledgeBase")
+                ]
+                
+                for path in docker_paths:
+                    if os.path.exists(path):
+                        kb_folder = path
+                        logger.info(f"找到知识库文件夹位置: {kb_folder}")
+                        break
+            else:
+                logger.info(f"使用默认路径: {kb_folder}")
+        
+        if not os.path.exists(kb_folder):
+            logger.warning(f"Knowledgebase folder not found: {kb_folder}")
+            return JSONResponse(
+                status_code=400,
+                content={"message": f"Knowledgebase folder not found: {request.folder_path}. Tried multiple locations."},
+            )
+        
+        # Count of successfully processed files
+        processed_count = 0
+        error_count = 0
+        
+        # List all files in the knowledgebase folder
+        for filename in os.listdir(kb_folder):
+            file_path = os.path.join(kb_folder, filename)
+            
+            # Skip directories
+            if os.path.isdir(file_path):
+                continue
+                
+            # Check file extension
+            ext = extract_file_extension(filename)
+            if ext not in [
+                "txt", "md", "csv", "pdf", "mp4", "jpg", "jpeg", "png", "bmp", "gif"
+            ]:
+                logger.warning(f"Skipping unsupported file type: {filename}")
+                error_count += 1
+                continue
+                
+            try:
+                # Read file content
+                with open(file_path, "rb") as f:
+                    content = f.read()
+                    
+                # Check file size
+                if len(content) > MAX_TEXT_LENGTH * 2:
+                    logger.warning(f"File too large: {filename}")
+                    error_count += 1
+                    continue
+                    
+                # Process the file based on its type
+                documents = []
+                metadata = {"source": filename, "type": ext}
+                
+                if ext in ["txt", "md", "csv"]:
+                    try:
+                        text = content.decode("utf-8")
+                    except UnicodeDecodeError:
+                        try:
+                            text = content.decode("latin-1")
+                            logger.info(f"Using latin-1 encoding for {filename}")
+                        except:
+                            logger.error(f"Failed to decode file: {filename}")
+                            error_count += 1
+                            continue
+                    documents = components["text_processor"].process_text(text, metadata)
+                    
+                elif ext == "pdf":
+                    documents = components["pdf_processor"].process_pdf(content, metadata)
+                    
+                elif ext in ["jpg", "jpeg", "png", "bmp", "gif"]:
+                    documents = components["image_processor"].process_image(content)
+                    
+                elif ext == "mp4":
+                    with NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_file:
+                        tmp_file.write(content)
+                        tmp_file.flush()
+                        video_file_path = tmp_file.name
+                    documents = components["video_processor"].process_video(
+                        video_file_path, metadata
+                    )
+                    os.unlink(tmp_file.name)
+                
+                if not documents:
+                    logger.warning(f"No documents generated from file: {filename}")
+                    error_count += 1
+                    continue
+                
+                # Extract text and metadata
+                texts = [doc["text"] for doc in documents]
+                metadatas = [doc["metadata"] for doc in documents]
+                
+                # Add to vector store
+                components["vector_store"].add_texts(texts, metadatas)
+                
+                processed_count += 1
+                logger.info(f"Successfully processed file: {filename}")
+                
+            except Exception as e:
+                logger.error(f"Error processing file {filename}: {str(e)}")
+                error_count += 1
+        
+        # Summary message
+        if processed_count > 0:
+            return {
+                "message": f"Successfully processed {processed_count} files from knowledgebase folder. {error_count} files were skipped or had errors."
+            }
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={"message": f"No files were processed. {error_count} files were skipped or had errors."},
+            )
+            
+    except Exception as e:
+        logger.error(f"Error loading from knowledgebase: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"message": f"Error loading from knowledgebase: {str(e)}"},
+        )
 
 
 # safe get vector store dependency function
