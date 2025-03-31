@@ -475,6 +475,25 @@
                                 >
                                     {loading ? "Loading..." : "Load News"}
                                 </button>
+                                <button 
+                                    onClick={() => {
+                                        // Get stock code from URL
+                                        const urlParams = new URLSearchParams(window.location.search);
+                                        const stockCode = urlParams.get('code');
+                                        if (stockCode) {
+                                            window.location.href = `/stocks/exportNewsToCSV?code=\${stockCode}`;
+                                        } else {
+                                            alert('Stock code not found');
+                                        }
+                                    }}
+                                    className="mt-4 ml-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center inline-flex"
+                                    disabled={true}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Export to CSV
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -518,6 +537,26 @@
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                            <button 
+                                onClick={() => {
+                                    // Get stock code from URL
+                                    const urlParams = new URLSearchParams(window.location.search);
+                                    const stockCode = urlParams.get('code');
+                                    if (stockCode) {
+                                        window.location.href = `/stocks/exportNewsToCSV?code=\${stockCode}`;
+                                    } else {
+                                        alert('Stock code not found');
+                                    }
+                                }}
+                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Export to Knowledge Base
+                            </button>
                         </div>
                     </div>
                 </div>

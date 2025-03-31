@@ -17,7 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,13 +75,13 @@ public class StockController {
     public String showStockDetail(@RequestParam(required = false) String code, Model model) {
         System.out.println("Loading detail page for stock code: " + code);
         
-        // 检查代码是否为空
+        // check if code is empty
         if (code == null || code.trim().isEmpty()) {
             System.out.println("Stock code is empty or null");
             return "redirect:/stocks?error=Stock+code+is+required";
         }
         
-        // 确保code是去除空格后的值
+        // ensure code is the trimmed value
         code = code.trim();
         
         Stock stock = stockService.getStock(code);
@@ -84,10 +90,10 @@ public class StockController {
             return "redirect:/stocks?error=Stock+not+found";
         }
         
-        // 确保stock对象的code字段不为空
+        // ensure stock object's code field is not empty
         if (stock.getCode() == null || stock.getCode().trim().isEmpty()) {
             System.out.println("WARNING: Stock object has empty code despite being retrieved with code: " + code);
-            // 使用请求中的代码
+            // use code from request
             stock.setCode(code);
         }
         
@@ -96,17 +102,17 @@ public class StockController {
         StockDetail stockDetail = stockService.getStockDetail(code);
         List<StockNews> news = Collections.emptyList();
         try {
-            // 如果有新闻服务实现，则获取相关新闻
+            // if there is news service implementation, get related news
             news = newsService.getNewsForStock(code);
         } catch (Exception e) {
-            // 忽略错误，使用空列表
+            // ignore error, use empty list
         }
         
         model.addAttribute("stock", stock);
         model.addAttribute("stockDetail", stockDetail);
         model.addAttribute("news", news);
         
-        // 打印添加到模型中的股票代码，确认其有效性
+        // print stock code added to model, confirm its validity
         System.out.println("添加到模型的股票代码(stock.code): " + stock.getCode());
         
         return "stock/detail";
@@ -173,7 +179,7 @@ public class StockController {
         }
     }
     
-    // API接口 - 收藏股票
+    // TODO API接口 - 收藏股票
     @PostMapping("/api/favorite")
     @ResponseBody
     public String favorite(@RequestParam String stockCode) {
@@ -205,5 +211,84 @@ public class StockController {
         }
         
         return "stock/debug";
+    }
+
+    /**
+     * export stock news to CSV and save to knowledgebase folder
+     */
+    @GetMapping("/exportNewsToCSV")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> exportNewsToCSV(
+            @RequestParam String code) throws IOException {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // check if code is empty
+        if (code == null || code.trim().isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Stock code is required");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        // get stock news data
+        List<StockNews> news = newsService.getNewsForStock(code);
+        
+        if (news.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "No news available for this stock");
+            return ResponseEntity.ok(response);
+        }
+        
+        // create knowledgebase folder path
+        String knowledgebasePath = "src/main/simple_pandaaiqa/knowledgeBase";
+        File directory = new File(knowledgebasePath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        
+        // generate file name, include stock code and timestamp
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String timestamp = dateFormat.format(new Date());
+        String fileName = "stock_news_" + code + "_" + timestamp + ".csv";
+        String filePath = knowledgebasePath + "/" + fileName;
+        
+        // write CSV data
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+            // write column titles
+            writer.println("Stock Code,Title,Publish Date,Summary,URL");
+            
+            // write each row data
+            for (StockNews item : news) {
+                String publishDate = item.getPublishDate() != null ? 
+                    dateFormat.format(item.getPublishDate()) : "";
+                
+                String csvLine = String.format("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"",
+                    escapeCSV(item.getCode()),
+                    escapeCSV(item.getTitle()),
+                    escapeCSV(publishDate),
+                    escapeCSV(item.getSummary()),
+                    escapeCSV(item.getUrl())
+                );
+                
+                writer.println(csvLine);
+            }
+        }
+        
+        response.put("success", true);
+        response.put("message", "Successfully exported " + news.size() + " news items");
+        response.put("fileName", fileName);
+        response.put("filePath", filePath);
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * helper method: escape double quotes in CSV fields
+     */
+    private String escapeCSV(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\"", "\"\"");
     }
 } 
