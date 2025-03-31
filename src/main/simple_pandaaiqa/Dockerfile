@@ -1,8 +1,11 @@
-# Use Python 3.8 slim image as base
-FROM python:3.8-slim
+# Use Python 3.12 slim image as base
+FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app
+
+# Upgrade pip
+RUN python -m pip install --upgrade pip
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
