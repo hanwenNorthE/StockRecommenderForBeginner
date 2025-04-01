@@ -92,6 +92,11 @@ class Generator:
             # prepare prompt text (using completions format)
             prompt = f"{self.system_prompt}\n\nBased on the following information, answer the question:\n\nContext:\n{context_text}\n\nQuestion:\n{query}\n\nAnswer:"
             
+            # 记录完整提示到日志
+            logger.info("==== FULL PROMPT ====")
+            logger.info(prompt)
+            logger.info("==== END PROMPT ====")
+            
             # prepare request
             payload = {
                 "model": self.model,

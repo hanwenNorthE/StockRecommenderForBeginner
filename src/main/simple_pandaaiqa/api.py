@@ -269,8 +269,11 @@ async def query(
     """process query and return answer"""
     try:
         logger.info(f"Processing query: {request.text}")
+        logger.info(f"Query role: {request.role or 'default'}")
+        logger.info(f"Using top_k: {request.top_k}")
 
         # search related documents
+        logger.info("Searching vector store for relevant documents...")
         results = components["vector_store"].search(request.text, top_k=request.top_k)
 
         if not results:
@@ -281,12 +284,23 @@ async def query(
                 "context": [],
             }
 
+        logger.info(f"Found {len(results)} relevant documents")
+        
+        # Log first document for debugging
+        if results:
+            first_doc = results[0]
+            logger.info(f"Top relevant document - Source: {first_doc.get('metadata', {}).get('source', 'Unknown')}")
+            logger.info(f"Top relevant document - Preview: {first_doc.get('text', '')[:100]}...")
+
         # Get the appropriate generator for the role
         generator = get_role_generator(request.role)
+        logger.info(f"Selected generator for role: {request.role or 'default'}")
 
         # Generate answer
+        logger.info("Generating answer...")
         answer = generator.generate(request.text, results)
         logger.info("Generated answer for the query")
+        logger.info(f"Answer preview: {answer[:100]}...")
 
         return {"query": request.text, "answer": answer, "context": results}
 

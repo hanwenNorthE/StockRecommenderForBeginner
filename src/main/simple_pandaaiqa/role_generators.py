@@ -35,6 +35,7 @@ class CustomerSupportGenerator(Generator):
         if not query.lower().startswith(("as a customer support", "customer support")):
             query = f"As a customer support agent, help with: {query}"
         
+        logger.info("==== USING CUSTOMER SUPPORT GENERATOR ====")
         return super().generate(query, context)
     
     def _prepare_context(self, context: List[Dict[str, Any]]) -> str:
@@ -90,6 +91,7 @@ class SalesGenerator(Generator):
         if not query.lower().startswith(("as a sales", "sales rep")):
             query = f"As a sales representative, respond to: {query}"
         
+        logger.info("==== USING SALES GENERATOR ====")
         return super().generate(query, context)
     
     def _prepare_context(self, context: List[Dict[str, Any]]) -> str:
@@ -144,6 +146,7 @@ class TechnicalGenerator(Generator):
         if not query.lower().startswith(("as a technical", "technical specialist")):
             query = f"As a technical specialist, explain: {query}"
         
+        logger.info("==== USING TECHNICAL GENERATOR ====")
         return super().generate(query, context)
     
     def _prepare_context(self, context: List[Dict[str, Any]]) -> str:

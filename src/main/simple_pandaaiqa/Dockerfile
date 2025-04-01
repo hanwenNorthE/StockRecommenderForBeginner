@@ -11,6 +11,8 @@ RUN python -m pip install --upgrade pip
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    tesseract-ocr \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker cache
@@ -59,4 +61,4 @@ ENV LM_STUDIO_API_BASE="http://host.docker.internal:1234"
 EXPOSE 5000
 
 # Command to run the application
-CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "5000"] 
+CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "5000"]
