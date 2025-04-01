@@ -27,8 +27,32 @@ public class DataLoaderService {
     private final JdbcTemplate jdbcTemplate;
     private static final String[] STOCK_CODES = {
             "aapl", "abcd", "adro", "amzn", "asml", "baa", "bc", "bcacr", "bcc", "bcd", 
-            "bce", "bcei", "bch", "bcor", "bcpc", "bcr", "bcrh", "bcrx", "bcs_d", "brk-b", 
-            "corp", "fb", "googl", "jnj", "jpm_a", "mc", "msft", "nvda", "tsla", "v"
+            "bce", "bcei", "bch", "bcor", "bcpc", "bcr", "bcrh", "bcrx", "bcs_d", "brk.b", 
+            "corp", "meta", "googl", "jnj", "jpm", "mc", "msft", "nvda", "tsla", "v",
+            // 零售类股票
+            "cost", "wmt", "tgt", "hd", "low", "kr", "bby", "dltr", "dg", "tjx",
+            // 加密货币相关股票
+            "clsk", "mara", "riot", "coin", "mstr", "hut", "hive", "bitf", "corz", "arbk",
+            // 医疗保健类
+            "unh", "pfe", "mrk", "abt", "abbv", "tmo", "lly", "bmy", "amgn",
+            // 能源类
+            "xom", "cvx", "cop", "oxy", "bp", "tot", "slb", "psx", "vlo",
+            // 半导体类
+            "amd", "intc", "mu", "avgo", "arm", "qcom", "txn", "amat", "on", "smci",
+            // 流媒体和娱乐
+            "nflx", "dis", "wbd", "para", "cmcsa", "spot", "roku", "fubo", "t", "ttwo",
+            // 旅游和酒店
+            "abnb", "bkng", "expe", "mar", "h", "hlt", "rcl", "ccl", "nclh", "lyft",
+            // 电动车和自动驾驶
+            "rivn", "lcid", "nio", "li", "xpev", "byddy", "gm", "f", "lazr", "vldr",
+            // 大型科技和AI公司
+            "adbe", "crm", "now", "orcl", "ibm", "pltr", "ai", "crwd", "snow", "path",
+            // 金融科技
+            "sq", "pypl", "afrm", "sofi", "upst", "hood", "wise", "meli", "lspd", "adyey",
+            // 中国科技股
+            "baba", "bidu", "pdd", "jd", "tcehy", "bili", "ntes", "se", "didi", "gotu",
+            // 社交媒体
+            "snap", "pins", "twtr", "mtch", "bmbl", "rblx", "u", "dkng", "penn", "wen"
     };
 
     @Autowired
